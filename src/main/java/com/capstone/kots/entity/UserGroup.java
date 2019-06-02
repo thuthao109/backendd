@@ -3,13 +3,14 @@ package com.capstone.kots.entity;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "user_groups")
 @ToString
-public class UserGroup {
-    private Integer id;
+public class UserGroup implements Serializable {
+    private int id;
     private Integer userId;
     private User user;
     private Integer groupId;
@@ -27,7 +28,7 @@ public class UserGroup {
         this.id = id;
     }
 
-    @Id
+    @Basic
     @Column(name = "user_id")
     public Integer getUserId() {
         return userId;
@@ -46,7 +47,7 @@ public class UserGroup {
         this.user = user;
     }
 
-    @Id
+    @Basic
     @Column(name = "group_id")
     public Integer getGroupId() {
         return groupId;
@@ -65,7 +66,7 @@ public class UserGroup {
         this.group = group;
     }
 
-    @Id
+    @Basic
     @Column(name = "joined_date")
     public Timestamp getJoinedDate() {
         return joinedDate;

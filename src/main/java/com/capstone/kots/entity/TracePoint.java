@@ -3,11 +3,12 @@ package com.capstone.kots.entity;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "trace_points")
 @ToString
-public class TracePoint {
+public class TracePoint implements Serializable {
     private int id;
     private Integer caseId;
     private Case aCase;

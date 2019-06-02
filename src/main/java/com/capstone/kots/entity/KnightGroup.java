@@ -3,12 +3,13 @@ package com.capstone.kots.entity;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "knight_groups")
 @ToString
-public class KnightGroup {
+public class KnightGroup implements Serializable {
     private int id;
     private Integer groupLeadUserId;
     private User user;

@@ -3,12 +3,13 @@ package com.capstone.kots.entity;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "criminal_cases")
 @ToString
-public class CriminalCase {
+public class CriminalCase implements Serializable {
     private int id;
     private Integer caseId;
     private Case aCase;

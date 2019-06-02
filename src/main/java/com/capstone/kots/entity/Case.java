@@ -3,20 +3,21 @@ package com.capstone.kots.entity;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "cases")
 @ToString
-public class Case {
+public class Case implements Serializable {
 
     private int id;
     private Integer createdId;
     private Integer confirmedId;
     private Timestamp createdTime;
     private String caseCode;
-    private long latitude;
-    private long longitude;
+    private double latitude;
+    private double longitude;
     private String address;
     private String caseTag;
     private int caseTagType;
@@ -78,21 +79,21 @@ public class Case {
 
     @Basic
     @Column(name = "latitude")
-    public long getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(long latitude) {
+    public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
     @Basic
     @Column(name = "longitude")
-    public long getLongitude() {
+    public double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(long longitude) {
+    public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 

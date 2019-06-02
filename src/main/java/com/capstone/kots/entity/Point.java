@@ -3,12 +3,13 @@ package com.capstone.kots.entity;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @Entity
 @Table(name = "points")
 @ToString
-public class Point {
+public class Point implements Serializable {
 
     private int id;
     private Integer traceId;
