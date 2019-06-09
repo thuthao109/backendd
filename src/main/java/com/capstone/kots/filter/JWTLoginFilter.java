@@ -55,13 +55,17 @@ public class JWTLoginFilter extends AbstractAuthenticationProcessingFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
         TokenAuthenticationService.addAuthentication(response, authResult.getName());
+        User user = userRepository.findByUsername(authResult.getName());
+        user.setPassword(null);
+        String userJson = new ObjectMapper().writeValueAsString(user).replace("{","").replace("}","");
         String authorizationString = response.getHeader("Authorization");
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
-        response.getWriter().write(
-                "{\"" + SecurityConstants.HEADER_STRING + "\":\"" + authorizationString +
-                        "\"}"
-        );
+        response.getWriter().write("{\"");
+        response.getWriter().write( SecurityConstants.HEADER_STRING + "\":\"" + authorizationString + "\",");
+        response.getWriter().write( userJson);
+//        response.getWriter().write(userJson);
+        response.getWriter().write("}");
 //        if(!banRepository.existsByUserIdAndExpireGreaterThanAndIsActive(
 //                userRepository.findByUsername(authResult.getName()).getId(),
 //                new Timestamp(System.currentTimeMillis()),
