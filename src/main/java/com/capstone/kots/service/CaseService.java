@@ -48,8 +48,8 @@ public class CaseService {
             throw new CaseExceptions.EvidenceNotExistedException();
         }
 
-//        String url = amazonClient.uploadFile(file);
-//        newCase.setCaseSource(url);
+        String url = amazonClient.uploadFile(file);
+        newCase.setCaseSource(url);
 
         caseRepository.saveAndFlush(newCase);
 
@@ -63,37 +63,36 @@ public class CaseService {
 //
 //        String requestJson = mapper.writeValueAsString(body);
 
-        JSONObject body = new JSONObject();
-//        body.put("priority", "high");
-        body.put("to", "d0ftlJFgfVM:APA91bGJerLz3JAe7kBX-BAC-l0w3AMlfbXSLORIVUgJCxJS1yrd_QaP7uePGMZJamzzKoKewiRCxVq6fx1Xuue94Gx69d53TR5S_LBsA6QKKtTQGoWmhjN884R6fj1yesS8BdRjm_1i");
+//        JSONObject body = new JSONObject();
+//        body.put("to", "d0ftlJFgfVM:APA91bGJerLz3JAe7kBX-BAC-l0w3AMlfbXSLORIVUgJCxJS1yrd_QaP7uePGMZJamzzKoKewiRCxVq6fx1Xuue94Gx69d53TR5S_LBsA6QKKtTQGoWmhjN884R6fj1yesS8BdRjm_1i");
+//
+//        JSONObject notification = new JSONObject();
+//        notification.put("title", "JSA Notification");
+//        notification.put("body", "Happy Message!");
+//
+//        JSONObject data = new JSONObject();
+//        data.put("Key-1", "JSA Data 1");
+//        data.put("Key-2", "JSA Data 2");
+//
+//        body.put("notification", notification);
+//        body.put("data", data);
 
-        JSONObject notification = new JSONObject();
-        notification.put("title", "JSA Notification");
-        notification.put("body", "Happy Message!");
-
-        JSONObject data = new JSONObject();
-        data.put("Key-1", "JSA Data 1");
-        data.put("Key-2", "JSA Data 2");
-
-        body.put("notification", notification);
-        body.put("data", data);
-
-        HttpEntity<String> request = new HttpEntity<>(body.toString());
-
-        CompletableFuture<String> pushNotification = pushNotificationService.send(request);
-        CompletableFuture.allOf(pushNotification).join();
-
-        try {
-            String firebaseResponse = pushNotification.get();
-
-            log.info("==============");
-            log.info(firebaseResponse);
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+//        HttpEntity<String> request = new HttpEntity<>(body.toString());
+//
+//        CompletableFuture<String> pushNotification = pushNotificationService.send(request);
+//        CompletableFuture.allOf(pushNotification).join();
+//
+//        try {
+//            String firebaseResponse = pushNotification.get();
+//
+//            log.info("==============");
+//            log.info(firebaseResponse);
+//
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
         return newCase;
 
     }

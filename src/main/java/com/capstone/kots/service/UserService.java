@@ -65,10 +65,25 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    public User setOnline(User user) throws UserExceptions.UserNotFoundException {
+
+        return user;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public User updateToken(String fcmToken,int userId) throws UserExceptions.UserNotFoundException {
+        Optional<User> updatedUser = userRepository.findById(userId);
+        if(updatedUser.get() == null) {
+            throw new UserExceptions.UserNotFoundException();
+        }
+        updatedUser.get().setDeviceToken(fcmToken);
+        return userRepository.save(updatedUser.get());
+    }
+
+    @Transactional(rollbackFor = Exception.class)
     public User createUser(User user, FacebookResource facebookResource) throws UnsupportedEncodingException, NoSuchAlgorithmException, RoleExceptions.RoleNotExistException, UserExceptions.UserDuplicateException, UserExceptions.UserLinkDonateExisted, UserExceptions.UsernameExistedException {
         Optional<Role> roleResult = roleRepository.findRolesByRoleName(ROLE_DEFAULT);
         Role role = roleResult.orElseThrow(RoleExceptions.RoleNotExistException::new);
-
 
 //        if(isExistUsername(user.getUsername())) {
 //            throw new UserExceptions.UsernameExistedException();
