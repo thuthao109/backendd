@@ -15,9 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Optional;
 
 import static com.capstone.kots.constant.UserConstants.ROLE_DEFAULT;
+
 
 @Service
 @Slf4j
@@ -32,6 +34,23 @@ public class UserService {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleRepository = roleRepository;
+    }
+
+    //get all user
+    public List<User> getAllUser(){
+        List<User> userList=userRepository.findAll();
+        //userRepository.delete(new User().setId());
+        return userList;
+    }
+
+    //get user
+    public Optional<User> findById(int id){
+        Optional<User> user=userRepository.findById(id);
+        return user;
+    }
+
+    public void deleteUser(User user){
+        userRepository.delete(user);
     }
 
     public User getUserByFacebookId(String facebookId) {

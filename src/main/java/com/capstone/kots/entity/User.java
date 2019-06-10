@@ -14,6 +14,11 @@ public class User {
     private String avatarUrl;
     private String username;
     private String password;
+    private String createdTime;
+    private String identifyNumber;
+    private String email;
+    private String address;
+    private String phoneNumber;
     private String provider;
     private String accessToken;
     private String userStatus;
@@ -58,8 +63,8 @@ public class User {
         return username;
     }
 
-    public void setUsername(String email) {
-        this.username = email;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     @Basic
@@ -70,6 +75,53 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+    @Basic
+    @Column(name = "created_time")
+    public String getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(String createdTime) {
+        this.createdTime = createdTime;
+    }
+    @Basic
+    @Column(name = "identify_number")
+    public String getIdentifyNumber() {
+        return identifyNumber;
+    }
+
+    public void setIdentifyNumber(String identifyNumber) {
+        this.identifyNumber = identifyNumber;
+    }
+
+    @Basic
+    @Column(name = "email")
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+    @Basic
+    @Column(name = "address")
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    @Basic
+    @Column(name = "phone_number")
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     @Basic

@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -35,6 +37,40 @@ public class UserController {
 //        }
 //        return ResponseEntity.status(HttpStatus.OK).body(result);
 //    }
+
+
+    //get all user
+    @RequestMapping(value = "/users", method = RequestMethod.GET)
+    public ResponseEntity getAllUser(){
+        List<User> users=userService.getAllUser();
+        if (users == null){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(users);
+    }
+
+    //get user
+    @RequestMapping(value = "/users/{id}", method = RequestMethod.GET)
+    public ResponseEntity getUserById(@PathVariable("id") int id){
+        Optional<User> users=userService.findById(id);
+        if (users == null){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(users);
+    }
+
+    //delete user
+    @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity deleteUser(@PathVariable("id") int id){
+        Optional<User> users=userService.findById(id);
+        if (!users.isPresent()) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        userService.deleteUser(users.get());
+        return (ResponseEntity) ResponseEntity.status(HttpStatus.OK);
+
+    }
+
 
     //register user
     @RequestMapping(value = "/users", method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE ,headers = "Accept=application/json")
