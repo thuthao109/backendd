@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
@@ -43,6 +44,12 @@ public class CaseController {
     }
 
 
+    @RequestMapping(value = "/chasing-cases", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity creatNewChasingCase(Case newCase) throws CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException, UserExceptions.UserNotFoundException {
+        log.info("Call case Service for creating new case");
+        Case createdCase = caseService.createChasingCase(newCase);
+        return ResponseEntity.status(HttpStatus.OK).body(createdCase);
+    }
 
 
 }
