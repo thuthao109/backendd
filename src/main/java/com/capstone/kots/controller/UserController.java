@@ -24,7 +24,6 @@ public class UserController {
 
     private final UserService userService;
 
-
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
@@ -93,4 +92,12 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
+    @RequestMapping(value = "/users/{userId}",method = RequestMethod.PUT,consumes = MediaType.APPLICATION_JSON_VALUE ,headers = "Accept=application/json")
+    public ResponseEntity updateUserProfile(@PathVariable(name="userId") int userId, @RequestBody User userReq) throws UserExceptions.UserNotFoundException {
+        User result = userService.updateUserProfile(userReq,userId);
+        if(result == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(result);
+    }
 }

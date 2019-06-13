@@ -36,6 +36,20 @@ public class UserService {
         this.roleRepository = roleRepository;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public User updateUserProfile(User newUser,int userId) throws UserExceptions.UserNotFoundException {
+        Optional<User> updatedUser = userRepository.findById(userId);
+        if(updatedUser.get() == null) {
+            throw new UserExceptions.UserNotFoundException();
+        }
+        updatedUser.get().setUsername(newUser.getUsername());
+        updatedUser.get().setPassword(newUser.getPassword());
+        updatedUser.get().setAvatarUrl(newUser.getAvatarUrl());
+        updatedUser.get().setRoleId(newUser.getRoleId());
+        updatedUser.get().setDeviceToken(newUser.getDeviceToken());
+        return userRepository.save(updatedUser.get());
+    }
+
     //get all user
     public List<User> getAllUser(){
         List<User> userList=userRepository.findAll();
