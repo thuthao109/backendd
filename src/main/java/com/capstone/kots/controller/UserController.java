@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
@@ -72,15 +73,26 @@ public class UserController {
 
 
     //register user
-    @RequestMapping(value = "/users", method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE ,headers = "Accept=application/json")
-    public ResponseEntity registerUser(@RequestBody User newUser) throws UnsupportedEncodingException, NoSuchAlgorithmException, RoleExceptions.RoleNotExistException, UserExceptions.UserDuplicateException, UserExceptions.UserLinkDonateExisted, UserExceptions.UsernameExistedException {
+    @RequestMapping(value = "/users", method = RequestMethod.POST,consumes = MediaType.MULTIPART_FORM_DATA_VALUE ,headers = "Accept=application/json")
+    public ResponseEntity registerUser(@RequestParam("file") MultipartFile file, User newUser) throws UnsupportedEncodingException, NoSuchAlgorithmException, RoleExceptions.RoleNotExistException, UserExceptions.UserDuplicateException, UserExceptions.UserLinkDonateExisted, UserExceptions.UsernameExistedException {
 //        log.info("Call User Service create a User not by Facebook");
-        User result = userService.createUser(newUser,null);
+        User result = userService.createUser(newUser,file,null);
         if (result == null){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+
+
+//    @RequestMapping(value = "/users", method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE ,headers = "Accept=application/json")
+//    public ResponseEntity registerUser(@RequestBody User newUser) throws UnsupportedEncodingException, NoSuchAlgorithmException, RoleExceptions.RoleNotExistException, UserExceptions.UserDuplicateException, UserExceptions.UserLinkDonateExisted, UserExceptions.UsernameExistedException {
+////        log.info("Call User Service create a User not by Facebook");
+//        User result = userService.createUser(newUser,null);
+//        if (result == null){
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//        return ResponseEntity.status(HttpStatus.OK).body(result);
+//    }
 
     @RequestMapping(value = "/users/{userId}/refresh-token",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE ,headers = "Accept=application/json")
     public ResponseEntity updateToken(@PathVariable(name="userId") int userId, @RequestBody User userReq) throws UserExceptions.UserNotFoundException {
