@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -28,12 +27,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    public final AmazonClient  amazonClient;
 
     @Autowired
-    public UserService(UserRepository userRepository,BCryptPasswordEncoder bCryptPasswordEncoder,RoleRepository roleRepository) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, RoleRepository roleRepository, AmazonClient amazonClient) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleRepository = roleRepository;
+        this.amazonClient = amazonClient;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -137,6 +138,8 @@ public class UserService {
 
         }
         user.setRoleId(role.getId());
+//        String url = amazonClient.uploadFile(file);
+//        user.setAvatarUrl(url);
 
         return userRepository.saveAndFlush(user);
     }
