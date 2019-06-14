@@ -37,7 +37,7 @@ public class CaseController {
 //        return ResponseEntity.status(HttpStatus.OK).body(result);
 //    }
     @RequestMapping(value = "/cases", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity creatNewCase(@RequestParam("file") MultipartFile file, Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException {
+    public ResponseEntity creatNewCase(@RequestParam("file") MultipartFile file, Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException {
         log.info("Call case Service for creating new case");
         Case createdCase = caseService.createCaseWithEvidence(newCase, file);
         return ResponseEntity.status(HttpStatus.OK).body(createdCase);

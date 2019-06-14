@@ -21,6 +21,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -52,6 +54,7 @@ public class CaseService {
         this.mapper = new ObjectMapper();
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public Case createChasingCase(Case newCase) throws CaseExceptions.CoordinateNotExistedException, InterruptedException, ExecutionException, UserExceptions.UserNotFoundException {
         if(newCase.getLatitude() == 0 || newCase.getLongitude() == 0){
             throw new CaseExceptions.CoordinateNotExistedException();
@@ -71,8 +74,16 @@ public class CaseService {
         newCase.setCaseTag(CHASING_TAG_TYPE);
         caseRepository.saveAndFlush(newCase);
 
+        Date date= new Date();
+
+        long time = date.getTime();
+        System.out.println("Time in Milliseconds: " + time);
+
+        Timestamp ts = new Timestamp(time);
+
         JSONObject data = new JSONObject();
         data.put("userId", newCase.getCreatedId());
+        data.put("timeCreated", ts.getTime());
 
         String url = String.format("%s/%s/%d",REALTIME_API,"chase",newCase.getId());
 
@@ -89,7 +100,7 @@ public class CaseService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Case createCaseWithEvidence(Case newCase, MultipartFile file) throws IOException,CaseExceptions.EvidenceNotExistedException,CaseExceptions.CoordinateNotExistedException {
+    public Case createCaseWithEvidence(Case newCase, MultipartFile file) throws IOException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException {
 
         if(newCase.getLatitude() == 0 || newCase.getLongitude() == 0){
             throw new CaseExceptions.CoordinateNotExistedException();
@@ -106,46 +117,34 @@ public class CaseService {
 
         caseRepository.saveAndFlush(newCase);
 
-//        HashMap<String,Object> body = new HashMap<>();
-//        Notification headerNotif = new Notification();
-//        headerNotif.setTitle("testing");
-//        headerNotif.setBody("body");
-//        body.put("notification",headerNotif);
-//        body.put("data",newCase);
-//
-//
-//        String requestJson = mapper.writeValueAsString(body);
+        JSONObject data = new JSONObject();
+        ObjectMapper Obj = new ObjectMapper();
+        String jsonStr ="";
+        try {
 
-//        JSONObject body = new JSONObject();
-//        body.put("to", "d0ftlJFgfVM:APA91bGJerLz3JAe7kBX-BAC-l0w3AMlfbXSLORIVUgJCxJS1yrd_QaP7uePGMZJamzzKoKewiRCxVq6fx1Xuue94Gx69d53TR5S_LBsA6QKKtTQGoWmhjN884R6fj1yesS8BdRjm_1i");
-//
-//        JSONObject notification = new JSONObject();
-//        notification.put("title", "JSA Notification");
-//        notification.put("body", "Happy Message!");
-//
-//        JSONObject data = new JSONObject();
-//        data.put("Key-1", "JSA Data 1");
-//        data.put("Key-2", "JSA Data 2");
-//
-//        body.put("notification", notification);
-//        body.put("data", data);
+            // get Oraganisation object as a json string
+            jsonStr = Obj.writeValueAsString(newCase);
 
-//        HttpEntity<String> request = new HttpEntity<>(body.toString());
-//
-//        CompletableFuture<String> pushNotification = pushNotificationService.send(request);
-//        CompletableFuture.allOf(pushNotification).join();
-//
-//        try {
-//            String firebaseResponse = pushNotification.get();
-//
-//            log.info("==============");
-//            log.info(firebaseResponse);
-//
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        } catch (ExecutionException e) {
-//            e.printStackTrace();
-//        }
+            // Displaying JSON String
+            System.out.println(jsonStr);
+        }
+
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        data.put("case", jsonStr);
+
+        String urlNotify = String.format("%s/case/notify",REALTIME_API);
+
+        HttpEntity<String> request = new HttpEntity<>(data.toString());
+
+        realtimeAPIService.send(urlNotify,request);
+
+//        String createCaseRoomResponse = createCaseRoom.get();
+
+//        log.info("=====================");
+//        log.info(createCaseRoomResponse);
+
         return newCase;
 
     }

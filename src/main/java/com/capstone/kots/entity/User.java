@@ -24,7 +24,19 @@ public class User {
     private String accessToken;
     private String userStatus;
     private String deviceToken;
+    private String fullname;
     private String facebookId;
+
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
+    @Basic
+    @Column(name = "fullname")
+    public String getFullname() {
+        return fullname;
+    }
 
     @Basic
     @Column(name = "created_time")
