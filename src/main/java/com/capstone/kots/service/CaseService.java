@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -52,6 +53,12 @@ public class CaseService {
         this.realtimeAPIService = realtimeAPIService;
         this.userRepository = userRepository;
         this.mapper = new ObjectMapper();
+    }
+
+
+    public List<Case> getAllCase(){
+        List<Case> caseList=caseRepository.findAll();
+        return caseList;
     }
 
     @Transactional(rollbackFor = Exception.class)

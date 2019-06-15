@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -36,6 +37,17 @@ public class CaseController {
 //        }
 //        return ResponseEntity.status(HttpStatus.OK).body(result);
 //    }
+
+    @RequestMapping(value = "/cases", method = RequestMethod.GET)
+    public ResponseEntity getAllCase(){
+        List<Case> cases=caseService.getAllCase();
+        if (cases == null){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(cases);
+    }
+
+
     @RequestMapping(value = "/cases", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity creatNewCase(@RequestParam("file") MultipartFile file, Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException {
         log.info("Call case Service for creating new case");

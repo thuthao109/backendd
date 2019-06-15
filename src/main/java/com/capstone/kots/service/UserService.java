@@ -3,6 +3,7 @@ package com.capstone.kots.service;
 import com.capstone.kots.entity.FacebookResource;
 import com.capstone.kots.entity.Role;
 import com.capstone.kots.entity.User;
+import com.capstone.kots.exception.CaseExceptions;
 import com.capstone.kots.exception.RoleExceptions;
 import com.capstone.kots.exception.UserExceptions;
 import com.capstone.kots.repository.RoleRepository;
@@ -12,12 +13,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Optional;
 
 import static com.capstone.kots.constant.UserConstants.ROLE_DEFAULT;
+
 
 @Service
 @Slf4j
@@ -26,12 +30,45 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    public final AmazonClient amazonClient;
 
     @Autowired
-    public UserService(UserRepository userRepository,BCryptPasswordEncoder bCryptPasswordEncoder,RoleRepository roleRepository) {
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, RoleRepository roleRepository, AmazonClient amazonClient) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleRepository = roleRepository;
+        this.amazonClient = amazonClient;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public User updateUserProfile(User newUser, int userId) throws UserExceptions.UserNotFoundException {
+        Optional<User> updatedUser = userRepository.findById(userId);
+        if (updatedUser.get() == null) {
+            throw new UserExceptions.UserNotFoundException();
+        }
+        updatedUser.get().setUsername(newUser.getUsername());
+        updatedUser.get().setPassword(newUser.getPassword());
+        updatedUser.get().setAvatarUrl(newUser.getAvatarUrl());
+        updatedUser.get().setRoleId(newUser.getRoleId());
+        updatedUser.get().setDeviceToken(newUser.getDeviceToken());
+        return userRepository.save(updatedUser.get());
+    }
+
+    //get all user
+    public List<User> getAllUser() {
+        List<User> userList = userRepository.findAll();
+        //userRepository.delete(new User().setId());
+        return userList;
+    }
+
+    //get user
+    public Optional<User> findById(int id) {
+        Optional<User> user = userRepository.findById(id);
+        return user;
+    }
+
+    public void deleteUser(User user) {
+        userRepository.delete(user);
     }
 
     public User getUserByFacebookId(String facebookId) {
@@ -71,9 +108,9 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public User updateToken(String fcmToken,int userId) throws UserExceptions.UserNotFoundException {
+    public User updateToken(String fcmToken, int userId) throws UserExceptions.UserNotFoundException {
         Optional<User> updatedUser = userRepository.findById(userId);
-        if(updatedUser.get() == null) {
+        if (updatedUser.get() == null) {
             throw new UserExceptions.UserNotFoundException();
         }
         updatedUser.get().setDeviceToken(fcmToken);
@@ -81,7 +118,7 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public User createUser(User user, FacebookResource facebookResource) throws UnsupportedEncodingException, NoSuchAlgorithmException, RoleExceptions.RoleNotExistException, UserExceptions.UserDuplicateException, UserExceptions.UserLinkDonateExisted, UserExceptions.UsernameExistedException {
+    public User createUser(User user, MultipartFile file, FacebookResource facebookResource) throws UnsupportedEncodingException, NoSuchAlgorithmException, RoleExceptions.RoleNotExistException, UserExceptions.UserDuplicateException, UserExceptions.UserLinkDonateExisted, UserExceptions.UsernameExistedException {
         Optional<Role> roleResult = roleRepository.findRolesByRoleName(ROLE_DEFAULT);
         Role role = roleResult.orElseThrow(RoleExceptions.RoleNotExistException::new);
 
@@ -105,6 +142,8 @@ public class UserService {
         }
         user.setRoleId(role.getId());
 
+        String url = amazonClient.uploadFile(file);
+        user.setAvatarUrl(url);
         return userRepository.saveAndFlush(user);
     }
 
