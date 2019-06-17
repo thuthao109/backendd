@@ -17,6 +17,8 @@ public class Case implements Serializable {
     private Integer createdId;
     private Integer confirmedId;
     private Timestamp createdTime;
+    private Timestamp deletedTime;
+    private String deletedReason;
     private String caseCode;
     private double latitude;
     private double longitude;
@@ -103,6 +105,27 @@ public class Case implements Serializable {
 
     public void setCreatedTime(Timestamp createdTime) {
         this.createdTime = createdTime;
+    }
+
+
+    @Basic
+    @Column(name = "deleted_time")
+    public Timestamp getDeletedTime() {
+        return deletedTime;
+    }
+
+    public void setDeletedTime(Timestamp deletedTime) {
+        this.deletedTime = deletedTime;
+    }
+
+    @Basic
+    @Column(name = "deleted_reason")
+    public String getDeletedReason() {
+        return deletedReason;
+    }
+
+    public void setDeletedReason(String deletedReason) {
+        this.deletedReason = deletedReason;
     }
 
     @Basic
