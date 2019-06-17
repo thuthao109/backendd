@@ -6,6 +6,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class CaseExceptions {
 
 
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Không có lý do từ chối")
+    public static class RejectReasonRequired extends Exception{
+        public RejectReasonRequired(){
+            super();
+        }
+        public RejectReasonRequired(String message){
+            super(message);
+        }
+    }
+
     @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Vụ án không hợp lệ")
     public static class CaseNotExisted extends Exception{
         public CaseNotExisted(){

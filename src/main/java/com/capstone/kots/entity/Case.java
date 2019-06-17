@@ -28,8 +28,7 @@ public class Case implements Serializable {
     private int displayType;
     private String caseSource;
     private int peopleLimit;
-    private Timestamp deletedTime;
-    private String deletedReason;
+    private Integer deletedUserId;
 
 
     @OneToMany(mappedBy = "cases")
@@ -44,6 +43,16 @@ public class Case implements Serializable {
         this.userJoinCases = userJoinCases;
     }
 
+    @Basic
+    @Column(name = "deleted_user_id")
+    public Integer getDeletedUserId() {
+        return deletedUserId;
+    }
+
+    public void setDeletedUserId(Integer deletedUserId) {
+        this.deletedUserId = deletedUserId;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -54,27 +63,6 @@ public class Case implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
-
-    @Basic
-    @Column(name = "deleted_time")
-    public Timestamp getDeletedTime() {
-        return deletedTime;
-    }
-
-    public void setDeletedTime(Timestamp deletedTime) {
-        this.deletedTime = deletedTime;
-    }
-
-    @Basic
-    @Column(name = "deleted_reason")
-    public String getDeletedReason() {
-        return deletedReason;
-    }
-
-    public void setDeletedReason(String deletedReason) {
-        this.deletedReason = deletedReason;
-    }
-
 
     @Basic
     @Column(name = "created_id")

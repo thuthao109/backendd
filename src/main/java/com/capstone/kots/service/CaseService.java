@@ -96,9 +96,13 @@ public class CaseService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Case rejectCase(Integer caseId, Integer rejectUserId, String deletedReason) throws CaseExceptions.CaseNotExisted {
+    public Case rejectCase(Integer caseId, Integer rejectUserId, String deletedReason) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
         if(caseId == 0 || caseId == null) {
             throw new CaseExceptions.CaseNotExisted();
+        }
+
+        if(deletedReason == "" || deletedReason == null){
+            throw new CaseExceptions.RejectReasonRequired();
         }
 
         Optional<Case> caseOne = caseRepository.findById(caseId);
@@ -108,12 +112,13 @@ public class CaseService {
         Timestamp ts = new Timestamp(new Date().getTime());
         caseOne.get().setDeletedTime(ts);
         caseOne.get().setDeletedReason(deletedReason);
+        caseOne.get().setDeletedUserId(rejectUserId);
 
         return caseRepository.save(caseOne.get());
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Case joinCase(Integer joinedCaseId,Integer userId) throws CaseExceptions.CaseNotExisted {
+    public Case joinCase(Integer joinedCaseId,Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull {
          if(joinedCaseId == 0 || joinedCaseId == null) {
             throw new CaseExceptions.CaseNotExisted();
          }
@@ -127,12 +132,28 @@ public class CaseService {
          newJoinedCase.setUserId(userId);
          newJoinedCase.setCaseId(joinedCaseId);
 
-         if(caseOne.get().getUserJoinCases() == null) {
-             caseOne.get().setUserJoinCases(new ArrayList<>());
-         }
+        Optional<List<UserJoinCase>> userJoined = userJoinCaseRepository.findByCaseId(caseOne.get().getId());
+
+        if(userJoined.isPresent()){
+            userJoined.get().forEach(userjoined -> {
+                Optional<User> user = userRepository.findById(userjoined.getUserId());
+                if(user.isPresent()){
+                    userjoined.setUser(user.get());
+                }
+            });
+            caseOne.get().setUserJoinCases(userJoined.get());
+        }else {
+            caseOne.get().setUserJoinCases(new ArrayList<>());
+        }
+
          List users = caseOne.get().getUserJoinCases();
+         if(users.size() >= caseOne.get().getPeopleLimit()){
+             throw new CaseExceptions.CaseIsFull();
+         }
          users.add(newJoinedCase);
          caseOne.get().setUserJoinCases(users);
+
+         userJoinCaseRepository.save(newJoinedCase);
 
          return caseOne.get();
     }

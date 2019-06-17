@@ -49,14 +49,26 @@ public class CaseController {
         return ResponseEntity.status(HttpStatus.OK).body(cases);
     }
 
+    @RequestMapping(value = "/case/{caseId}/join", method = RequestMethod.PUT)
+    public ResponseEntity joinCase(@PathVariable("caseId") Integer caseId,
+                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull {
+        Case joinCase = caseService.joinCase(caseId,userId);
+        return ResponseEntity.status(HttpStatus.OK).body(joinCase);
+    }
+
     @RequestMapping(value = "/case/{caseId}/confirm", method = RequestMethod.PUT)
-    public ResponseEntity confirmCase(){
-        return ResponseEntity.status(HttpStatus.OK).body("");
+    public ResponseEntity confirmCase(@PathVariable("caseId") Integer caseId,
+                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted {
+        Case confirmCase = caseService.confirmCase(caseId,userId);
+        return ResponseEntity.status(HttpStatus.OK).body(confirmCase);
     }
 
     @RequestMapping(value = "/case/{caseId}/reject", method = RequestMethod.PUT)
-    public ResponseEntity rejectCase(){
-        return ResponseEntity.status(HttpStatus.OK).body("");
+    public ResponseEntity rejectCase(@PathVariable("caseId") Integer caseId,
+                                     @RequestParam("userId") Integer userId,
+                                     @RequestParam("delete_reason") String deleteReason) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
+        Case rejectCase = caseService.rejectCase(caseId,userId,deleteReason);
+        return ResponseEntity.status(HttpStatus.OK).body(rejectCase);
     }
 
     @RequestMapping(value = "/cases", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
