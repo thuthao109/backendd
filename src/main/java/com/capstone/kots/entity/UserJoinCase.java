@@ -13,9 +13,17 @@ public class UserJoinCase implements Serializable {
 
     private int id;
     private Integer userId;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
+
     private Integer caseId;
+
+    @ManyToOne
+    @JoinColumn(name = "case_id")
     private Case oneCase;
+
     private Timestamp joinedTime;
 
     @Id

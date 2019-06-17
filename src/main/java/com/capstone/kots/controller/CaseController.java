@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 public class CaseController {
     private CaseService caseService;
 
+
     @Autowired
     public CaseController(CaseService caseService) {
         this.caseService = caseService;
@@ -38,6 +39,7 @@ public class CaseController {
 //        return ResponseEntity.status(HttpStatus.OK).body(result);
 //    }
 
+
     @RequestMapping(value = "/cases", method = RequestMethod.GET)
     public ResponseEntity getAllCase(){
         List<Case> cases=caseService.getAllCase();
@@ -47,6 +49,15 @@ public class CaseController {
         return ResponseEntity.status(HttpStatus.OK).body(cases);
     }
 
+    @RequestMapping(value = "/case/{caseId}/confirm", method = RequestMethod.PUT)
+    public ResponseEntity confirmCase(){
+        return ResponseEntity.status(HttpStatus.OK).body("");
+    }
+
+    @RequestMapping(value = "/case/{caseId}/reject", method = RequestMethod.PUT)
+    public ResponseEntity rejectCase(){
+        return ResponseEntity.status(HttpStatus.OK).body("");
+    }
 
     @RequestMapping(value = "/cases", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity creatNewCase(@RequestParam("file") MultipartFile file, Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException {

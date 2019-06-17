@@ -20,11 +20,6 @@ public class User {
     private String phoneNumber;
     private String username;
     private String password;
-    private String createdTime;
-    private String identifyNumber;
-    private String email;
-    private String address;
-    private String phoneNumber;
     private String provider;
     private String accessToken;
     private String userStatus;
@@ -43,55 +38,9 @@ public class User {
         return fullname;
     }
 
-    @Basic
-    @Column(name = "created_time")
-    public Timestamp getCreatedTime() {
-        return createdTime;
-    }
 
     public void setCreatedTime(Timestamp createdTime) {
         this.createdTime = createdTime;
-    }
-
-    public void setIdentifyNumber(String identifyNumber) {
-        this.identifyNumber = identifyNumber;
-    }
-
-    @Basic
-    @Column(name = "identify_number")
-    public String getIdentifyNumber() {
-        return identifyNumber;
-    }
-
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    @Basic
-    @Column(name = "email")
-    public String getEmail() {
-        return email;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    @Basic
-    @Column(name = "address")
-    public String getAddress() {
-        return address;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    @Basic
-    @Column(name = "phone_number")
-    public String getPhoneNumber() {
-        return phoneNumber;
     }
 
     @Id
@@ -145,15 +94,7 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    @Basic
-    @Column(name = "created_time")
-    public String getCreatedTime() {
-        return createdTime;
-    }
 
-    public void setCreatedTime(String createdTime) {
-        this.createdTime = createdTime;
-    }
     @Basic
     @Column(name = "identify_number")
     public String getIdentifyNumber() {
