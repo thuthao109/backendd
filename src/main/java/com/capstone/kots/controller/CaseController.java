@@ -58,7 +58,7 @@ public class CaseController {
 
     @RequestMapping(value = "/case/{caseId}/confirm", method = RequestMethod.PUT)
     public ResponseEntity confirmCase(@PathVariable("caseId") Integer caseId,
-                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted {
+                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed {
         Case confirmCase = caseService.confirmCase(caseId,userId);
         return ResponseEntity.status(HttpStatus.OK).body(confirmCase);
     }

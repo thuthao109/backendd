@@ -61,7 +61,8 @@ public class CaseService {
     @Transactional(readOnly = true)
     public List<Case> getAllCase(){
 
-        List<Case> caseList=caseRepository.findAll();
+        List<Case> caseList=caseRepository.findActiveCases();
+
         caseList.forEach( oneCase -> {
             Optional<List<UserJoinCase>> userJoined = userJoinCaseRepository.findByCaseId(oneCase.getId());
 
@@ -80,17 +81,27 @@ public class CaseService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Case confirmCase(Integer caseId, Integer userId) throws CaseExceptions.CaseNotExisted {
+    public Case confirmCase(Integer caseId, Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed {
         if(caseId == 0 || caseId == null) {
             throw new CaseExceptions.CaseNotExisted();
         }
 
-        Optional<Case> caseOne = caseRepository.findById(caseId);
+        Optional<Case> caseOne = caseRepository.findActiveCaseById(caseId);
         if(!caseOne.isPresent()){
             throw new CaseExceptions.CaseNotExisted();
         }
 
-        caseOne.get().setConfirmedId(userId);
+        if(caseOne.get().getConfirmedId() == null || caseOne.get().getConfirmedId().equals("")){
+            caseOne.get().setConfirmedId(userId);
+
+            UserJoinCase newJoinedCase = new UserJoinCase();
+            newJoinedCase.setUserId(userId);
+            newJoinedCase.setCaseId(caseId);
+
+            userJoinCaseRepository.save(newJoinedCase);
+        }else{
+            throw new CaseExceptions.CaseAlreadyConfirmed();
+        }
 
         return caseRepository.save(caseOne.get());
     }
@@ -105,7 +116,7 @@ public class CaseService {
             throw new CaseExceptions.RejectReasonRequired();
         }
 
-        Optional<Case> caseOne = caseRepository.findById(caseId);
+        Optional<Case> caseOne = caseRepository.findActiveCaseById(caseId);
         if(!caseOne.isPresent()){
             throw new CaseExceptions.CaseNotExisted();
         }
@@ -123,7 +134,7 @@ public class CaseService {
             throw new CaseExceptions.CaseNotExisted();
          }
 
-         Optional<Case> caseOne = caseRepository.findById(joinedCaseId);
+         Optional<Case> caseOne = caseRepository.findActiveCaseById(joinedCaseId);
          if(!caseOne.isPresent()){
              throw new CaseExceptions.CaseNotExisted();
          }
