@@ -3,6 +3,7 @@ package com.capstone.kots.entity;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "users")
@@ -12,18 +13,35 @@ public class User {
     private int id;
     private Integer roleId;
     private String avatarUrl;
-    private String username;
-    private String password;
-    private String createdTime;
+    private Timestamp createdTime;
     private String identifyNumber;
     private String email;
     private String address;
     private String phoneNumber;
+    private String username;
+    private String password;
     private String provider;
     private String accessToken;
     private String userStatus;
     private String deviceToken;
+    private String fullname;
     private String facebookId;
+
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
+    @Basic
+    @Column(name = "fullname")
+    public String getFullname() {
+        return fullname;
+    }
+
+
+    public void setCreatedTime(Timestamp createdTime) {
+        this.createdTime = createdTime;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -76,15 +94,7 @@ public class User {
     public void setPassword(String password) {
         this.password = password;
     }
-    @Basic
-    @Column(name = "created_time")
-    public String getCreatedTime() {
-        return createdTime;
-    }
 
-    public void setCreatedTime(String createdTime) {
-        this.createdTime = createdTime;
-    }
     @Basic
     @Column(name = "identify_number")
     public String getIdentifyNumber() {

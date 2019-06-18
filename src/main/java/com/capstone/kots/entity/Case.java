@@ -5,6 +5,8 @@ import lombok.ToString;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "cases")
@@ -26,6 +28,30 @@ public class Case implements Serializable {
     private int displayType;
     private String caseSource;
     private int peopleLimit;
+    private Integer deletedUserId;
+
+
+    @OneToMany(mappedBy = "cases")
+    List<UserJoinCase> userJoinCases;
+
+    @Transient
+    public List<UserJoinCase> getUserJoinCases() {
+        return userJoinCases;
+    }
+
+    public void setUserJoinCases(List<UserJoinCase> userJoinCases) {
+        this.userJoinCases = userJoinCases;
+    }
+
+    @Basic
+    @Column(name = "deleted_user_id")
+    public Integer getDeletedUserId() {
+        return deletedUserId;
+    }
+
+    public void setDeletedUserId(Integer deletedUserId) {
+        this.deletedUserId = deletedUserId;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -102,7 +128,7 @@ public class Case implements Serializable {
 
     @Basic
     @Column(name = "latitude")
-    public double getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 
@@ -112,7 +138,7 @@ public class Case implements Serializable {
 
     @Basic
     @Column(name = "longitude")
-    public double getLongitude() {
+    public Double getLongitude() {
         return longitude;
     }
 
@@ -142,7 +168,7 @@ public class Case implements Serializable {
 
     @Basic
     @Column(name = "case_tag_type")
-    public int getCaseTagType() {
+    public Integer getCaseTagType() {
         return caseTagType;
     }
 
@@ -152,7 +178,7 @@ public class Case implements Serializable {
 
     @Basic
     @Column(name = "display_type")
-    public int getDisplayType() {
+    public Integer getDisplayType() {
         return displayType;
     }
 
@@ -173,11 +199,13 @@ public class Case implements Serializable {
 
     @Basic
     @Column(name = "people_limit")
-    public int getPeopleLimit() {
+    public Integer getPeopleLimit() {
         return peopleLimit;
     }
 
     public void setPeopleLimit(int peopleLimit) {
         this.peopleLimit = peopleLimit;
     }
+
+
 }

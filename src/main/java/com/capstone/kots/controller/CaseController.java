@@ -24,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 public class CaseController {
     private CaseService caseService;
 
+
     @Autowired
     public CaseController(CaseService caseService) {
         this.caseService = caseService;
@@ -38,6 +39,7 @@ public class CaseController {
 //        return ResponseEntity.status(HttpStatus.OK).body(result);
 //    }
 
+
     @RequestMapping(value = "/cases", method = RequestMethod.GET)
     public ResponseEntity getAllCase(){
         List<Case> cases=caseService.getAllCase();
@@ -47,9 +49,30 @@ public class CaseController {
         return ResponseEntity.status(HttpStatus.OK).body(cases);
     }
 
+    @RequestMapping(value = "/case/{caseId}/join", method = RequestMethod.PUT)
+    public ResponseEntity joinCase(@PathVariable("caseId") Integer caseId,
+                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull {
+        Case joinCase = caseService.joinCase(caseId,userId);
+        return ResponseEntity.status(HttpStatus.OK).body(joinCase);
+    }
+
+    @RequestMapping(value = "/case/{caseId}/confirm", method = RequestMethod.PUT)
+    public ResponseEntity confirmCase(@PathVariable("caseId") Integer caseId,
+                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed {
+        Case confirmCase = caseService.confirmCase(caseId,userId);
+        return ResponseEntity.status(HttpStatus.OK).body(confirmCase);
+    }
+
+    @RequestMapping(value = "/case/{caseId}/reject", method = RequestMethod.PUT)
+    public ResponseEntity rejectCase(@PathVariable("caseId") Integer caseId,
+                                     @RequestParam("userId") Integer userId,
+                                     @RequestParam("delete_reason") String deleteReason) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
+        Case rejectCase = caseService.rejectCase(caseId,userId,deleteReason);
+        return ResponseEntity.status(HttpStatus.OK).body(rejectCase);
+    }
 
     @RequestMapping(value = "/cases", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity creatNewCase(@RequestParam("file") MultipartFile file, Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException {
+    public ResponseEntity creatNewCase(@RequestParam("file") MultipartFile file, Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException {
         log.info("Call case Service for creating new case");
         Case createdCase = caseService.createCaseWithEvidence(newCase, file);
         return ResponseEntity.status(HttpStatus.OK).body(createdCase);

@@ -3,9 +3,11 @@ package com.capstone.kots.service;
 import com.capstone.kots.entity.Case;
 import com.capstone.kots.entity.Notification;
 import com.capstone.kots.entity.User;
+import com.capstone.kots.entity.UserJoinCase;
 import com.capstone.kots.exception.CaseExceptions;
 import com.capstone.kots.exception.UserExceptions;
 import com.capstone.kots.repository.CaseRepository;
+import com.capstone.kots.repository.UserJoinCaseRepository;
 import com.capstone.kots.repository.UserRepository;
 import com.capstone.kots.util.ServiceUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,9 +23,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.sql.Timestamp;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -38,27 +39,138 @@ public class CaseService {
     private final String CHASING_TAG_TYPE = "Rượt bắt cuớp";
     private final RealtimeAPIService realtimeAPIService;
     private final String REALTIME_API = "http://localhost:3001";
+    private UserJoinCaseRepository userJoinCaseRepository;
 
     @Autowired
     public CaseService(CaseRepository caseRepository,
                         AmazonClient amazonClient,
                          FirebasePushNotificationService pushNotificationService,
                           RealtimeAPIService realtimeAPIService,
-                           UserRepository userRepository) {
+                           UserRepository userRepository,
+                            UserJoinCaseRepository userJoinCaseRepository) {
         this.caseRepository = caseRepository;
         this.amazonClient = amazonClient;
         this.pushNotificationService = pushNotificationService;
         this.realtimeAPIService = realtimeAPIService;
         this.userRepository = userRepository;
+        this.userJoinCaseRepository = userJoinCaseRepository;
         this.mapper = new ObjectMapper();
     }
 
 
+    @Transactional(readOnly = true)
     public List<Case> getAllCase(){
-        List<Case> caseList=caseRepository.findAll();
+
+        List<Case> caseList=caseRepository.findActiveCases();
+
+        caseList.forEach( oneCase -> {
+            Optional<List<UserJoinCase>> userJoined = userJoinCaseRepository.findByCaseId(oneCase.getId());
+
+            if(userJoined.isPresent()){
+                userJoined.get().forEach(userjoined -> {
+                    Optional<User> user = userRepository.findById(userjoined.getUserId());
+                    if(user.isPresent()){
+                        userjoined.setUser(user.get());
+                    }
+                });
+                oneCase.setUserJoinCases(userJoined.get());
+            }
+
+        });
         return caseList;
     }
 
+    @Transactional(rollbackFor = Exception.class)
+    public Case confirmCase(Integer caseId, Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed {
+        if(caseId == 0 || caseId == null) {
+            throw new CaseExceptions.CaseNotExisted();
+        }
+
+        Optional<Case> caseOne = caseRepository.findActiveCaseById(caseId);
+        if(!caseOne.isPresent()){
+            throw new CaseExceptions.CaseNotExisted();
+        }
+
+        if(caseOne.get().getConfirmedId() == null || caseOne.get().getConfirmedId().equals("")){
+            caseOne.get().setConfirmedId(userId);
+
+            UserJoinCase newJoinedCase = new UserJoinCase();
+            newJoinedCase.setUserId(userId);
+            newJoinedCase.setCaseId(caseId);
+
+            userJoinCaseRepository.save(newJoinedCase);
+        }else{
+            throw new CaseExceptions.CaseAlreadyConfirmed();
+        }
+
+        return caseRepository.save(caseOne.get());
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Case rejectCase(Integer caseId, Integer rejectUserId, String deletedReason) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
+        if(caseId == 0 || caseId == null) {
+            throw new CaseExceptions.CaseNotExisted();
+        }
+
+        if(deletedReason == "" || deletedReason == null){
+            throw new CaseExceptions.RejectReasonRequired();
+        }
+
+        Optional<Case> caseOne = caseRepository.findActiveCaseById(caseId);
+        if(!caseOne.isPresent()){
+            throw new CaseExceptions.CaseNotExisted();
+        }
+        Timestamp ts = new Timestamp(new Date().getTime());
+        caseOne.get().setDeletedTime(ts);
+        caseOne.get().setDeletedReason(deletedReason);
+        caseOne.get().setDeletedUserId(rejectUserId);
+
+        return caseRepository.save(caseOne.get());
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Case joinCase(Integer joinedCaseId,Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull {
+         if(joinedCaseId == 0 || joinedCaseId == null) {
+            throw new CaseExceptions.CaseNotExisted();
+         }
+
+         Optional<Case> caseOne = caseRepository.findActiveCaseById(joinedCaseId);
+         if(!caseOne.isPresent()){
+             throw new CaseExceptions.CaseNotExisted();
+         }
+
+         UserJoinCase newJoinedCase = new UserJoinCase();
+         newJoinedCase.setUserId(userId);
+         newJoinedCase.setCaseId(joinedCaseId);
+
+        Optional<List<UserJoinCase>> userJoined = userJoinCaseRepository.findByCaseId(caseOne.get().getId());
+
+        if(userJoined.isPresent()){
+            userJoined.get().forEach(userjoined -> {
+                Optional<User> user = userRepository.findById(userjoined.getUserId());
+                if(user.isPresent()){
+                    userjoined.setUser(user.get());
+                }
+            });
+            caseOne.get().setUserJoinCases(userJoined.get());
+        }else {
+            caseOne.get().setUserJoinCases(new ArrayList<>());
+        }
+
+         List users = caseOne.get().getUserJoinCases();
+         if(users.size() >= caseOne.get().getPeopleLimit()){
+             throw new CaseExceptions.CaseIsFull();
+         }
+         users.add(newJoinedCase);
+         caseOne.get().setUserJoinCases(users);
+
+         userJoinCaseRepository.save(newJoinedCase);
+
+         return caseOne.get();
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
     public Case createChasingCase(Case newCase) throws CaseExceptions.CoordinateNotExistedException, InterruptedException, ExecutionException, UserExceptions.UserNotFoundException {
         if(newCase.getLatitude() == 0 || newCase.getLongitude() == 0){
             throw new CaseExceptions.CoordinateNotExistedException();
@@ -78,8 +190,16 @@ public class CaseService {
         newCase.setCaseTag(CHASING_TAG_TYPE);
         caseRepository.saveAndFlush(newCase);
 
+        Date date= new Date();
+
+        long time = date.getTime();
+        System.out.println("Time in Milliseconds: " + time);
+
+        Timestamp ts = new Timestamp(time);
+
         JSONObject data = new JSONObject();
         data.put("userId", newCase.getCreatedId());
+        data.put("timeCreated", ts.getTime());
 
         String url = String.format("%s/%s/%d",REALTIME_API,"chase",newCase.getId());
 
@@ -96,7 +216,7 @@ public class CaseService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Case createCaseWithEvidence(Case newCase, MultipartFile file) throws IOException,CaseExceptions.EvidenceNotExistedException,CaseExceptions.CoordinateNotExistedException {
+    public Case createCaseWithEvidence(Case newCase, MultipartFile file) throws IOException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException {
 
         if(newCase.getLatitude() == 0 || newCase.getLongitude() == 0){
             throw new CaseExceptions.CoordinateNotExistedException();
@@ -113,46 +233,34 @@ public class CaseService {
 
         caseRepository.saveAndFlush(newCase);
 
-//        HashMap<String,Object> body = new HashMap<>();
-//        Notification headerNotif = new Notification();
-//        headerNotif.setTitle("testing");
-//        headerNotif.setBody("body");
-//        body.put("notification",headerNotif);
-//        body.put("data",newCase);
-//
-//
-//        String requestJson = mapper.writeValueAsString(body);
 
-//        JSONObject body = new JSONObject();
-//        body.put("to", "d0ftlJFgfVM:APA91bGJerLz3JAe7kBX-BAC-l0w3AMlfbXSLORIVUgJCxJS1yrd_QaP7uePGMZJamzzKoKewiRCxVq6fx1Xuue94Gx69d53TR5S_LBsA6QKKtTQGoWmhjN884R6fj1yesS8BdRjm_1i");
-//
-//        JSONObject notification = new JSONObject();
-//        notification.put("title", "JSA Notification");
-//        notification.put("body", "Happy Message!");
-//
-//        JSONObject data = new JSONObject();
-//        data.put("Key-1", "JSA Data 1");
-//        data.put("Key-2", "JSA Data 2");
-//
-//        body.put("notification", notification);
-//        body.put("data", data);
+        //Notify to online knight -- start
+        JSONObject data = new JSONObject();
+        ObjectMapper Obj = new ObjectMapper();
+        String jsonStr ="";
+        try {
 
-//        HttpEntity<String> request = new HttpEntity<>(body.toString());
-//
-//        CompletableFuture<String> pushNotification = pushNotificationService.send(request);
-//        CompletableFuture.allOf(pushNotification).join();
-//
-//        try {
-//            String firebaseResponse = pushNotification.get();
-//
-//            log.info("==============");
-//            log.info(firebaseResponse);
-//
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        } catch (ExecutionException e) {
-//            e.printStackTrace();
-//        }
+            // get Oraganisation object as a json string
+            jsonStr = Obj.writeValueAsString(newCase);
+        }
+
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        data.put("case", jsonStr);
+
+        String urlNotify = String.format("%s/case/notify",REALTIME_API);
+
+        HttpEntity<String> request = new HttpEntity<>(data.toString());
+
+        realtimeAPIService.send(urlNotify,request);
+        //Notify to online knight -- end
+
+//        String createCaseRoomResponse = createCaseRoom.get();
+
+//        log.info("=====================");
+//        log.info(createCaseRoomResponse);
+
         return newCase;
 
     }

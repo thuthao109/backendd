@@ -5,6 +5,46 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 public class CaseExceptions {
 
+    @ResponseStatus(code = HttpStatus.ACCEPTED, reason = "Vụ này đã có người xác nhận trước đó")
+    public static class CaseAlreadyConfirmed extends Exception{
+        public CaseAlreadyConfirmed(){
+            super();
+        }
+        public CaseAlreadyConfirmed(String message){
+            super(message);
+        }
+    }
+
+
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Không có lý do từ chối")
+    public static class RejectReasonRequired extends Exception{
+        public RejectReasonRequired(){
+            super();
+        }
+        public RejectReasonRequired(String message){
+            super(message);
+        }
+    }
+
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Vụ án không hợp lệ")
+    public static class CaseNotExisted extends Exception{
+        public CaseNotExisted(){
+            super();
+        }
+        public CaseNotExisted(String message){
+            super(message);
+        }
+    }
+
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Vụ án đã đủ số người tham gia")
+    public static class CaseIsFull extends Exception{
+        public CaseIsFull(){
+            super();
+        }
+        public CaseIsFull(String message){
+            super(message);
+        }
+    }
 
     @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Không có dữ liệu chứng minh")
     public static class EvidenceNotExistedException extends Exception{
