@@ -28,21 +28,6 @@ public class User {
     private String facebookId;
 
 
-    public void setFullname(String fullname) {
-        this.fullname = fullname;
-    }
-
-    @Basic
-    @Column(name = "fullname")
-    public String getFullname() {
-        return fullname;
-    }
-
-
-    public void setCreatedTime(Timestamp createdTime) {
-        this.createdTime = createdTime;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -103,6 +88,26 @@ public class User {
 
     public void setIdentifyNumber(String identifyNumber) {
         this.identifyNumber = identifyNumber;
+    }
+
+    @Basic
+    @Column(name = "fullname")
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
+    @Basic
+    @Column(name = "created_Time")
+    public Timestamp getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(Timestamp createdTime) {
+        this.createdTime = createdTime;
     }
 
     @Basic

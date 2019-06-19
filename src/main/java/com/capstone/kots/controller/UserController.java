@@ -85,17 +85,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-
-//    @RequestMapping(value = "/users", method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE ,headers = "Accept=application/json")
-//    public ResponseEntity registerUser(@RequestBody User newUser) throws UnsupportedEncodingException, NoSuchAlgorithmException, RoleExceptions.RoleNotExistException, UserExceptions.UserDuplicateException, UserExceptions.UserLinkDonateExisted, UserExceptions.UsernameExistedException {
-////        log.info("Call User Service create a User not by Facebook");
-//        User result = userService.createUser(newUser,null);
-//        if (result == null){
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//        return ResponseEntity.status(HttpStatus.OK).body(result);
-//    }
-
     @RequestMapping(value = "/users/{userId}/refresh-token",method = RequestMethod.POST,consumes = MediaType.APPLICATION_JSON_VALUE ,headers = "Accept=application/json")
     public ResponseEntity updateToken(@PathVariable(name="userId") int userId, @RequestBody User userReq) throws UserExceptions.UserNotFoundException {
         log.info(userReq.getDeviceToken());
@@ -106,6 +95,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
+    //update user
     @RequestMapping(value = "/users/{userId}",method = RequestMethod.PUT,
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity updateUserProfile(@PathVariable(name="userId") int userId,
@@ -118,13 +108,5 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-//    @RequestMapping(value = "/users/{userId}",method = RequestMethod.PUT,consumes = MediaType.MULTIPART_FORM_DATA)
-//    public ResponseEntity updateUserProfile(@PathVariable(name="userId") int userId, @RequestBody User userReq) throws UserExceptions.UserNotFoundException {
-//        User result = userService.updateUserProfile(userReq,userId);
-//        if(result == null) {
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//        return ResponseEntity.status(HttpStatus.OK).body(result);
-//    }
 
 }
