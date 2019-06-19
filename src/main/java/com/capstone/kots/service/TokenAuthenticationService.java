@@ -34,7 +34,7 @@ public class TokenAuthenticationService {
                 // parse the token.
                 String user = Jwts.parser()
                         .setSigningKey(JWT_SECRET)
-                        .parseClaimsJws(token.replace(TOKEN_PREFIX, ""))
+                        .parseClaimsJws(token.replace(TOKEN_PREFIX, "").trim())
                         .getBody()
                         .getSubject();
 

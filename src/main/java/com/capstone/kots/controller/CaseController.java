@@ -49,21 +49,23 @@ public class CaseController {
         return ResponseEntity.status(HttpStatus.OK).body(cases);
     }
 
-    @RequestMapping(value = "/case/{caseId}/join", method = RequestMethod.PUT)
+    @RequestMapping(value = "/case/{caseId}/join", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity joinCase(@PathVariable("caseId") Integer caseId,
-                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull {
+                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull, CaseExceptions.AlreadyJoinCase {
         Case joinCase = caseService.joinCase(caseId,userId);
         return ResponseEntity.status(HttpStatus.OK).body(joinCase);
     }
 
-    @RequestMapping(value = "/case/{caseId}/confirm", method = RequestMethod.PUT)
+    @RequestMapping(value = "/case/{caseId}/confirm", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity confirmCase(@PathVariable("caseId") Integer caseId,
-                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed {
-        Case confirmCase = caseService.confirmCase(caseId,userId);
+                                      @RequestParam("userId") Integer userId,
+                                      @RequestParam("limitPeople") Integer limitPeople,
+                                      @RequestParam("caseTag") String caseTag) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed, CaseExceptions.LimitPeopleRequired, CaseExceptions.CaseTagRequired {
+        Case confirmCase = caseService.confirmCase(caseId,userId,limitPeople,caseTag);
         return ResponseEntity.status(HttpStatus.OK).body(confirmCase);
     }
 
-    @RequestMapping(value = "/case/{caseId}/reject", method = RequestMethod.PUT)
+    @RequestMapping(value = "/case/{caseId}/reject", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity rejectCase(@PathVariable("caseId") Integer caseId,
                                      @RequestParam("userId") Integer userId,
                                      @RequestParam("delete_reason") String deleteReason) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {

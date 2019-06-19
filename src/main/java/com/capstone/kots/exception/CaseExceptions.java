@@ -5,6 +5,16 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 public class CaseExceptions {
 
+    @ResponseStatus(code = HttpStatus.OK, reason = "Vụ này đã có người xác nhận trước đó")
+    public static class AlreadyJoinCase extends Exception{
+        public AlreadyJoinCase(){
+            super();
+        }
+        public AlreadyJoinCase(String message){
+            super(message);
+        }
+    }
+
     @ResponseStatus(code = HttpStatus.ACCEPTED, reason = "Vụ này đã có người xác nhận trước đó")
     public static class CaseAlreadyConfirmed extends Exception{
         public CaseAlreadyConfirmed(){
@@ -22,6 +32,27 @@ public class CaseExceptions {
             super();
         }
         public RejectReasonRequired(String message){
+            super(message);
+        }
+    }
+
+
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Chưa nhập giới hạn số người tham gia")
+    public static class LimitPeopleRequired extends Exception{
+        public LimitPeopleRequired(){
+            super();
+        }
+        public LimitPeopleRequired(String message){
+            super(message);
+        }
+    }
+
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Nhập loại vụ án")
+    public static class CaseTagRequired extends Exception{
+        public CaseTagRequired(){
+            super();
+        }
+        public CaseTagRequired(String message){
             super(message);
         }
     }
