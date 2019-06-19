@@ -47,7 +47,7 @@ public class UserService {
             throw new UserExceptions.UserNotFoundException();
         }
         updatedUser.get().setUsername(newUser.getUsername());
-        updatedUser.get().setPassword(newUser.getPassword());
+      //  updatedUser.get().setPassword(newUser.getPassword());
         updatedUser.get().setEmail(newUser.getEmail());
         updatedUser.get().setAddress(newUser.getAddress());
         updatedUser.get().setPhoneNumber(newUser.getPhoneNumber());
@@ -57,8 +57,8 @@ public class UserService {
             updatedUser.get().setAvatarUrl(url);
         }
 
-        updatedUser.get().setRoleId(newUser.getRoleId());
-        updatedUser.get().setDeviceToken(newUser.getDeviceToken());
+//        updatedUser.get().setRoleId(newUser.getRoleId());
+//        updatedUser.get().setDeviceToken(newUser.getDeviceToken());
 
         return userRepository.save(updatedUser.get());
     }
@@ -172,7 +172,7 @@ public class UserService {
             String url = amazonClient.uploadFile(file);
             user.setAvatarUrl(url);
         }
-       
+
         return userRepository.saveAndFlush(user);
     }
 

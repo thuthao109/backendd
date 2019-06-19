@@ -110,7 +110,7 @@ public class UserController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity updateUserProfile(@PathVariable(name="userId") int userId,
                                             @RequestParam(value="file", required = false) MultipartFile file,
-                                            User userReq) throws UserExceptions.UserNotFoundException {
+                                             User userReq) throws UserExceptions.UserNotFoundException {
         User result = userService.updateUserProfile(userReq,userId,file);
         if(result == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
