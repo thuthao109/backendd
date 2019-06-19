@@ -59,6 +59,8 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
+
+
     //delete user
     @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE)
     public ResponseEntity deleteUser(@PathVariable("id") int id){
@@ -74,7 +76,7 @@ public class UserController {
 
     //register user
     @RequestMapping(value = "/users", method = RequestMethod.POST,consumes = MediaType.MULTIPART_FORM_DATA_VALUE ,headers = "Accept=application/json")
-    public ResponseEntity registerUser(@RequestParam("file") MultipartFile file, User newUser) throws UnsupportedEncodingException, NoSuchAlgorithmException, RoleExceptions.RoleNotExistException, UserExceptions.UserDuplicateException, UserExceptions.UserLinkDonateExisted, UserExceptions.UsernameExistedException {
+    public ResponseEntity registerUser(@RequestParam( value="file", required = false) MultipartFile file, User newUser) throws UnsupportedEncodingException, NoSuchAlgorithmException, RoleExceptions.RoleNotExistException, UserExceptions.UserDuplicateException, UserExceptions.UserLinkDonateExisted, UserExceptions.UsernameExistedException {
 //        log.info("Call User Service create a User not by Facebook");
         User result = userService.createUser(newUser,file,null);
         if (result == null){
@@ -104,12 +106,25 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
-    @RequestMapping(value = "/users/{userId}",method = RequestMethod.PUT,consumes = MediaType.APPLICATION_JSON_VALUE ,headers = "Accept=application/json")
-    public ResponseEntity updateUserProfile(@PathVariable(name="userId") int userId, @RequestBody User userReq) throws UserExceptions.UserNotFoundException {
-        User result = userService.updateUserProfile(userReq,userId);
+    @RequestMapping(value = "/users/{userId}",method = RequestMethod.PUT,
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity updateUserProfile(@PathVariable(name="userId") int userId,
+                                            @RequestParam(value="file", required = false) MultipartFile file,
+                                             User userReq) throws UserExceptions.UserNotFoundException {
+        User result = userService.updateUserProfile(userReq,userId,file);
         if(result == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+
+//    @RequestMapping(value = "/users/{userId}",method = RequestMethod.PUT,consumes = MediaType.MULTIPART_FORM_DATA)
+//    public ResponseEntity updateUserProfile(@PathVariable(name="userId") int userId, @RequestBody User userReq) throws UserExceptions.UserNotFoundException {
+//        User result = userService.updateUserProfile(userReq,userId);
+//        if(result == null) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//        return ResponseEntity.status(HttpStatus.OK).body(result);
+//    }
+
 }

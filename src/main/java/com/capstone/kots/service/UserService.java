@@ -41,19 +41,46 @@ public class UserService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public User updateUserProfile(User newUser, int userId) throws UserExceptions.UserNotFoundException {
+    public User updateUserProfile(User newUser, int userId, MultipartFile file) throws UserExceptions.UserNotFoundException {
         Optional<User> updatedUser = userRepository.findById(userId);
         if (updatedUser.get() == null) {
             throw new UserExceptions.UserNotFoundException();
         }
         updatedUser.get().setUsername(newUser.getUsername());
-        updatedUser.get().setPassword(newUser.getPassword());
-        updatedUser.get().setAvatarUrl(newUser.getAvatarUrl());
-        updatedUser.get().setRoleId(newUser.getRoleId());
-        updatedUser.get().setDeviceToken(newUser.getDeviceToken());
+      //  updatedUser.get().setPassword(newUser.getPassword());
+        updatedUser.get().setEmail(newUser.getEmail());
+        updatedUser.get().setAddress(newUser.getAddress());
+        updatedUser.get().setPhoneNumber(newUser.getPhoneNumber());
+        if(file!=null){
+            String url = amazonClient.uploadFile(file);
+            // newUser.setAvatarUrl(url);
+            updatedUser.get().setAvatarUrl(url);
+        }
+
+//        updatedUser.get().setRoleId(newUser.getRoleId());
+//        updatedUser.get().setDeviceToken(newUser.getDeviceToken());
+
         return userRepository.save(updatedUser.get());
     }
 
+
+//    @Transactional(rollbackFor = Exception.class)
+//    public User updateUserProfile(User newUser, int userId) throws UserExceptions.UserNotFoundException {
+//        Optional<User> updatedUser = userRepository.findById(userId);
+//        if (updatedUser.get() == null) {
+//            throw new UserExceptions.UserNotFoundException();
+//        }
+//        updatedUser.get().setUsername(newUser.getUsername());
+//        updatedUser.get().setPassword(newUser.getPassword());
+//        updatedUser.get().setEmail(newUser.getEmail());
+//        updatedUser.get().setAddress(newUser.getAddress());
+//        updatedUser.get().setPhoneNumber(newUser.getPhoneNumber());
+//        updatedUser.get().setAvatarUrl(newUser.getAvatarUrl());
+//        updatedUser.get().setRoleId(newUser.getRoleId());
+//        updatedUser.get().setDeviceToken(newUser.getDeviceToken());
+//
+//        return userRepository.save(updatedUser.get());
+//    }
     //get all user
     public List<User> getAllUser() {
         List<User> userList = userRepository.findAll();
@@ -141,9 +168,11 @@ public class UserService {
 
         }
         user.setRoleId(role.getId());
+        if(file!=null){
+            String url = amazonClient.uploadFile(file);
+            user.setAvatarUrl(url);
+        }
 
-        String url = amazonClient.uploadFile(file);
-        user.setAvatarUrl(url);
         return userRepository.saveAndFlush(user);
     }
 
