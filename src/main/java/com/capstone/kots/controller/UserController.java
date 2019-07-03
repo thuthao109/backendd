@@ -59,8 +59,6 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 
-
-
     //delete user
     @RequestMapping(value = "/users/{id}", method = RequestMethod.DELETE)
     public ResponseEntity deleteUser(@PathVariable("id") int id){
@@ -108,5 +106,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
+//    @RequestMapping(value = "/users/{userId}",method = RequestMethod.PUT,consumes = MediaType.MULTIPART_FORM_DATA)
+//    public ResponseEntity updateUserProfile(@PathVariable(name="userId") int userId, @RequestBody User userReq) throws UserExceptions.UserNotFoundException {
+//        User result = userService.updateUserProfile(userReq,userId);
+//        if(result == null) {
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//        return ResponseEntity.status(HttpStatus.OK).body(result);
+//    }
 
 }
