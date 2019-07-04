@@ -27,9 +27,9 @@ public class PoliceWardService {
         return wardList;
     }
 
-    public List<String> findWardById(Integer districtId){
-        return  wardRepository.getWardNames(districtId);
-    }
+//    //public List<PoliceWard> findWardById(int districtId){
+//        return  wardRepository.getWardNames(districtId);
+//    }
 
 
 }

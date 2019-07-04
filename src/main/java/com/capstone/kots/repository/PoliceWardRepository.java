@@ -14,10 +14,18 @@ public interface PoliceWardRepository extends JpaRepository<PoliceWard, Integer>
     @Override
     List<PoliceWard> findAll();
 
-    @Query(value="SELECT w.ward_name FROM police_wards w " +
+    @Query(value="SELECT ward_name, phone_number FROM police_wards w " +
             "LEFT JOIN police_districts d on w.district_id = d.id " +
             "WHERE d.id = :districtId",nativeQuery = true)
     List<String> getWardNames(@Param("districtId") Integer districtId);
 
+
+    List<PoliceWard> findWardById(Integer districtId);
+
+
+
+//    @Query(value="SELECT ward_name, phone_number FROM police_wards " +
+//            "WHERE district_id = :districtId",nativeQuery = true)
+//    List<String> getWardNames(@Param("districtId") int districtId);
 }
 

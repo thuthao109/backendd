@@ -48,13 +48,13 @@ public class PoliceController {
         }
         return ResponseEntity.status(HttpStatus.OK).body(districts);
     }
-
-    @RequestMapping(value = "/wards/{districtId}", method = RequestMethod.GET)
-    public ResponseEntity getWardByDistrictId(@PathVariable("districtId") Integer districtId){
-        List<String> wards=wardService.findWardById(districtId);
-        if (wards == null){
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(wards);
-    }
+//
+//    @RequestMapping(value = "/wards/{districtId}", method = RequestMethod.GET)
+//    public ResponseEntity getWardByDistrictId(@PathVariable("districtId") int districtId){
+//        List<PoliceWard> wards=districtService.getListWard(districtId);
+//        if (wards == null){
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+//        }
+//        return ResponseEntity.status(HttpStatus.OK).body(wards);
+//    }
 }

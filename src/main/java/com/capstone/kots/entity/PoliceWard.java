@@ -2,12 +2,15 @@ package com.capstone.kots.entity;
 
 import java.io.Serializable;
 import javax.persistence.*;
+import javax.persistence.criteria.CriteriaBuilder;
 
 @Entity
 @Table(name = "police_wards")
 public class PoliceWard {
     private int id;
     private Integer districtId;
+
+
     private String wardName;
     private String wardDescription;
     private String phoneNumber;
@@ -62,4 +65,6 @@ public class PoliceWard {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+
 }
