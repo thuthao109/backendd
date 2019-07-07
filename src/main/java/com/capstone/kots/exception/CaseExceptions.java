@@ -96,4 +96,14 @@ public class CaseExceptions {
             super(message);
         }
     }
+
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Không có dữ liệu người tạo")
+    public static class NoCreatedUserDefineException extends Exception{
+        public NoCreatedUserDefineException(){
+            super();
+        }
+        public NoCreatedUserDefineException(String message){
+            super(message);
+        }
+    }
 }

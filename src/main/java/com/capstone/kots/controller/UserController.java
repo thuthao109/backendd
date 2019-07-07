@@ -1,6 +1,7 @@
 package com.capstone.kots.controller;
 
 import com.capstone.kots.entity.User;
+import com.capstone.kots.entity.UserJoinCase;
 import com.capstone.kots.exception.RoleExceptions;
 import com.capstone.kots.exception.UserExceptions;
 import com.capstone.kots.repository.UserRepository;
@@ -57,6 +58,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(users);
+    }
+
+    @RequestMapping(value = "/users/{id}/cases", method = RequestMethod.GET)
+    public ResponseEntity getCaseOfUserById(@PathVariable("id") int id){
+        Optional<List<UserJoinCase>> listCases = userService.findUserJoinCaseByUserId(id);
+        if (listCases == null){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(listCases);
     }
 
 

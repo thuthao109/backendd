@@ -1,6 +1,7 @@
 package com.capstone.kots.controller;
 
 import com.capstone.kots.entity.Case;
+import com.capstone.kots.entity.EmptyJsonResponse;
 import com.capstone.kots.exception.CaseExceptions;
 import com.capstone.kots.exception.UserExceptions;
 import com.capstone.kots.service.AmazonClient;
@@ -49,6 +50,25 @@ public class CaseController {
         return ResponseEntity.status(HttpStatus.OK).body(cases);
     }
 
+
+    @RequestMapping(value = "/cases/{caseId}", method = RequestMethod.GET)
+    public ResponseEntity getCase(@PathVariable("caseId") Integer caseId){
+        Case caseOne = caseService.getCaseById(caseId);
+        if (caseOne == null){
+            return ResponseEntity.status(HttpStatus.OK).body(new EmptyJsonResponse());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(caseOne);
+    }
+
+    @RequestMapping(value = "/cases/code/{caseCode}", method = RequestMethod.GET)
+    public ResponseEntity getCase(@PathVariable("caseCode") String caseCode){
+        Case caseOne = caseService.getCaseByCaseCode(caseCode);
+        if (caseOne == null){
+            return ResponseEntity.status(HttpStatus.OK).body(new EmptyJsonResponse());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(caseOne);
+    }
+
     @RequestMapping(value = "/case/{caseId}/join", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity joinCase(@PathVariable("caseId") Integer caseId,
                                       @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull, CaseExceptions.AlreadyJoinCase {
@@ -74,9 +94,16 @@ public class CaseController {
     }
 
     @RequestMapping(value = "/cases", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity creatNewCase(@RequestParam("file") MultipartFile file, Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException {
+    public ResponseEntity creatNewCase(@RequestParam("file") MultipartFile file, Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException, CaseExceptions.NoCreatedUserDefineException {
         log.info("Call case Service for creating new case");
         Case createdCase = caseService.createCaseWithEvidence(newCase, file);
+        return ResponseEntity.status(HttpStatus.OK).body(createdCase);
+    }
+
+    @RequestMapping(value = "/cases/sos", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity creatNewCase(@RequestBody Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException, CaseExceptions.NoCreatedUserDefineException {
+        log.info("Call case Service for creating new case");
+        Case createdCase = caseService.createCaseSos(newCase);
         return ResponseEntity.status(HttpStatus.OK).body(createdCase);
     }
 

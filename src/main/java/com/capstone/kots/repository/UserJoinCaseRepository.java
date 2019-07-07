@@ -18,5 +18,7 @@ public interface UserJoinCaseRepository extends JpaRepository<UserJoinCase, Inte
 
     Optional<List<UserJoinCase>> findByCaseId(int caseId);
 
+    Optional<List<UserJoinCase>> findByUserId(int userId);
+
     Optional<UserJoinCase> findByCaseIdAndUserId(Integer caseId,Integer userId);
 }

@@ -30,6 +30,18 @@ public class Case implements Serializable {
     private int peopleLimit;
     private Integer deletedUserId;
 
+    private User createdUser;
+
+    private String caseName;
+
+    @Transient
+    public User getCreatedUser() {
+        return createdUser;
+    }
+
+    public void setCreatedUser(User createdUser) {
+        this.createdUser = createdUser;
+    }
 
     @OneToMany(mappedBy = "cases")
     List<UserJoinCase> userJoinCases;
@@ -207,5 +219,13 @@ public class Case implements Serializable {
         this.peopleLimit = peopleLimit;
     }
 
+    @Basic
+    @Column(name = "case_name")
+    public String getCaseName() {
+        return caseName;
+    }
 
+    public void setCaseName(String caseName) {
+        this.caseName = caseName;
+    }
 }

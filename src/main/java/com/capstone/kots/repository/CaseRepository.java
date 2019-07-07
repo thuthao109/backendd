@@ -20,6 +20,9 @@ public interface CaseRepository extends JpaRepository<Case, Integer> {
 
     @Query(value = "SELECT * FROM cases c WHERE c.deleted_time is null AND c.id = :case_id ", nativeQuery = true)
     Optional<Case> findActiveCaseById(@Param("case_id") Integer caseId);
+
+    @Query(value = "SELECT * FROM cases c WHERE c.deleted_time is null AND c.case_code = :case_code ", nativeQuery = true)
+    Optional<Case> findActiveCaseByCaseCode(@Param("case_code") String caseId);
 }
 
 

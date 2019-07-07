@@ -1,12 +1,12 @@
 package com.capstone.kots.service;
 
-import com.capstone.kots.entity.FacebookResource;
-import com.capstone.kots.entity.Role;
-import com.capstone.kots.entity.User;
+import com.capstone.kots.entity.*;
 import com.capstone.kots.exception.CaseExceptions;
 import com.capstone.kots.exception.RoleExceptions;
 import com.capstone.kots.exception.UserExceptions;
+import com.capstone.kots.repository.CaseRepository;
 import com.capstone.kots.repository.RoleRepository;
+import com.capstone.kots.repository.UserJoinCaseRepository;
 import com.capstone.kots.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,15 +29,25 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final UserJoinCaseRepository userJoinCaseRepository;
+    private final CaseRepository caseRepository;
+
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     public final AmazonClient amazonClient;
 
     @Autowired
-    public UserService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, RoleRepository roleRepository, AmazonClient amazonClient) {
+    public UserService(UserRepository userRepository,
+                       BCryptPasswordEncoder bCryptPasswordEncoder,
+                       RoleRepository roleRepository,
+                       AmazonClient amazonClient,
+                       UserJoinCaseRepository userJoinCaseRepository,
+                       CaseRepository caseRepository) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleRepository = roleRepository;
         this.amazonClient = amazonClient;
+        this.userJoinCaseRepository = userJoinCaseRepository;
+        this.caseRepository = caseRepository;
     }
 
     //update user
@@ -90,6 +100,23 @@ public class UserService {
         return user;
     }
 
+
+    public Optional<List<UserJoinCase>> findUserJoinCaseByUserId(int id){
+        Optional<List<UserJoinCase>> caseJoined = userJoinCaseRepository.findByUserId(id);
+        if(caseJoined.isPresent()){
+            caseJoined.get().forEach(userJoinCase -> {
+                Optional<Case> caseById = caseRepository.findById(userJoinCase.getCaseId());
+                if (caseById.isPresent()) {
+                    Optional<User> user = userRepository.findById(caseById.get().getCreatedId());
+                    if(user.isPresent()){
+                        caseById.get().setCreatedUser(user.get());
+                    }
+                    userJoinCase.setOneCase(caseById.get());
+                }
+            });
+        }
+        return caseJoined;
+    }
     //delete user
     public void deleteUser(User user) {
         userRepository.delete(user);
