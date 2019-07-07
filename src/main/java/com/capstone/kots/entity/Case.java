@@ -77,6 +77,27 @@ public class Case implements Serializable {
     }
 
     @Basic
+    @Column(name = "deleted_time")
+    public Timestamp getDeletedTime() {
+        return deletedTime;
+    }
+
+    public void setDeletedTime(Timestamp deletedTime) {
+        this.deletedTime = deletedTime;
+    }
+
+    @Basic
+    @Column(name = "deleted_reason")
+    public String getDeletedReason() {
+        return deletedReason;
+    }
+
+    public void setDeletedReason(String deletedReason) {
+        this.deletedReason = deletedReason;
+    }
+
+
+    @Basic
     @Column(name = "created_id")
     public Integer getCreatedId() {
         return createdId;
@@ -105,27 +126,6 @@ public class Case implements Serializable {
 
     public void setCreatedTime(Timestamp createdTime) {
         this.createdTime = createdTime;
-    }
-
-
-    @Basic
-    @Column(name = "deleted_time")
-    public Timestamp getDeletedTime() {
-        return deletedTime;
-    }
-
-    public void setDeletedTime(Timestamp deletedTime) {
-        this.deletedTime = deletedTime;
-    }
-
-    @Basic
-    @Column(name = "deleted_reason")
-    public String getDeletedReason() {
-        return deletedReason;
-    }
-
-    public void setDeletedReason(String deletedReason) {
-        this.deletedReason = deletedReason;
     }
 
     @Basic

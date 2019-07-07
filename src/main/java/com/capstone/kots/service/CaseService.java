@@ -1,7 +1,6 @@
 package com.capstone.kots.service;
 
 import com.capstone.kots.entity.Case;
-import com.capstone.kots.entity.Notification;
 import com.capstone.kots.entity.User;
 import com.capstone.kots.entity.UserJoinCase;
 import com.capstone.kots.exception.CaseExceptions;
@@ -15,13 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;

@@ -70,7 +70,7 @@ public class UserService {
     }
 
 
-    //    @Transactional(rollbackFor = Exception.class)
+//    @Transactional(rollbackFor = Exception.class)
 //    public User updateUserProfile(User newUser, int userId) throws UserExceptions.UserNotFoundException {
 //        Optional<User> updatedUser = userRepository.findById(userId);
 //        if (updatedUser.get() == null) {
