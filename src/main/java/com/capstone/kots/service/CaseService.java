@@ -192,6 +192,10 @@ public class CaseService {
 
         Optional<UserJoinCase> alreadyJoined = userJoinCaseRepository.findByCaseIdAndUserId(joinedCaseId, userId);
         if (alreadyJoined.isPresent()) {
+            caseOne.get().setCreatedUser(userRepository.findById(caseOne.get().getCreatedId()).get());
+            if(caseOne.isPresent()){
+                caseOne = getUserJoined(caseOne);
+            }
             return caseOne.get();
         }
 
@@ -211,6 +215,7 @@ public class CaseService {
             caseOne.get().setUserJoinCases(userJoined.get());
         } else {
             caseOne.get().setUserJoinCases(new ArrayList<>());
+
         }
 
         List users = caseOne.get().getUserJoinCases();
@@ -221,6 +226,12 @@ public class CaseService {
         caseOne.get().setUserJoinCases(users);
 
         userJoinCaseRepository.save(newJoinedCase);
+
+        caseOne.get().setCreatedUser(userRepository.findById(caseOne.get().getCreatedId()).get());
+        if(caseOne.isPresent()){
+            caseOne = getUserJoined(caseOne);
+        }
+
 
         return caseOne.get();
     }
