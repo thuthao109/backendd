@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @Slf4j
@@ -71,25 +72,40 @@ public class CaseController {
 
     @RequestMapping(value = "/case/{caseId}/join", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity joinCase(@PathVariable("caseId") Integer caseId,
-                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull, CaseExceptions.AlreadyJoinCase {
+                                      @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull, CaseExceptions.AlreadyJoinCase, ExecutionException, InterruptedException {
         Case joinCase = caseService.joinCase(caseId,userId);
         return ResponseEntity.status(HttpStatus.OK).body(joinCase);
     }
 
-    @RequestMapping(value = "/case/{caseId}/confirm", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseEntity confirmCase(@PathVariable("caseId") Integer caseId,
+    @RequestMapping(value = "/case/{caseId}/update", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity updateCase(@PathVariable("caseId") Integer caseId,
                                       @RequestParam("userId") Integer userId,
                                       @RequestParam("limitPeople") Integer limitPeople,
                                       @RequestParam("caseTag") String caseTag) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed, CaseExceptions.LimitPeopleRequired, CaseExceptions.CaseTagRequired {
-        Case confirmCase = caseService.confirmCase(caseId,userId,limitPeople,caseTag);
+        Case confirmCase = caseService.updateCase(caseId,userId,limitPeople,caseTag);
         return ResponseEntity.status(HttpStatus.OK).body(confirmCase);
     }
 
-    @RequestMapping(value = "/case/{caseId}/reject", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseEntity rejectCase(@PathVariable("caseId") Integer caseId,
-                                     @RequestParam("userId") Integer userId,
-                                     @RequestParam("delete_reason") String deleteReason) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
-        Case rejectCase = caseService.rejectCase(caseId,userId,deleteReason);
+    @RequestMapping(value = "/case/code/{caseCode}/update", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity updateCaseByCaseCode(@PathVariable("caseCode") String caseCode,
+                                      @RequestParam(value = "limitPeople",required = false) Integer limitPeople,
+                                      @RequestParam(value = "caseTag",required = false) String caseTag) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed, CaseExceptions.LimitPeopleRequired, CaseExceptions.CaseTagRequired {
+        Optional<Case> updatedCase = caseService.updateCaseByCaseCode(caseCode,limitPeople,caseTag);
+        return ResponseEntity.status(HttpStatus.OK).body(updatedCase);
+    }
+
+
+    @RequestMapping(value = "/case/{caseId}/delete", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity deleteCase(@PathVariable("caseId") Integer caseId,
+                                     @RequestParam(value = "userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
+        Case rejectCase = caseService.deleteCase(caseId,userId);
+        return ResponseEntity.status(HttpStatus.OK).body(rejectCase);
+    }
+
+    @RequestMapping(value = "/case/code/{caseCode}/delete", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity deleteCaseByCaseCode(@PathVariable("caseCode") String caseCode,
+                                     @RequestParam(value = "userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
+        Case rejectCase = caseService.deleteCaseByCaseCode(caseCode,userId);
         return ResponseEntity.status(HttpStatus.OK).body(rejectCase);
     }
 

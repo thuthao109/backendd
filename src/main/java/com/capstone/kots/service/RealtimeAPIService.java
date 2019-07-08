@@ -4,10 +4,9 @@ import com.capstone.kots.entity.Case;
 import com.capstone.kots.service.interceptor.HeaderRequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.http.client.ClientHttpRequestInterceptor;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -27,6 +26,98 @@ public class RealtimeAPIService {
     private final String doubleType = "doubleValue";
     private static String FIREBASE_SERVER_KEY = "AAAA7XjQPXQ:APA91bF5mbhgPwOvQjXJL204wGYGAAKPqOkWr4oXjYdfeqf7WQ0P3cBKaynYnRXVYpjQpr5CUUktBGMtISHCdEi-wqjkozL23WexH_PNepuScFw6g_bmVLgfEuE9L-CNZ12Js-X9LMNK";
 
+
+    @Async
+    public CompletableFuture<String> updateCase(Case updatedCase) {
+
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+
+        ArrayList<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
+//        interceptors.add(new HeaderRequestInterceptor("Authorization", "key=" + FIREBASE_SERVER_KEY));
+        interceptors.add(new HeaderRequestInterceptor("Content-Type", "application/json"));
+        restTemplate.setInterceptors(interceptors);
+
+        JSONObject object = new JSONObject();
+        JSONObject fields = new JSONObject();
+        JSONObject peopleLimit = new JSONObject();
+        JSONObject caseTag = new JSONObject();
+
+        peopleLimit.put(integerType,updatedCase.getPeopleLimit());
+        caseTag.put(stringType,updatedCase.getCaseTag());
+
+        fields.put("peopleLimit", peopleLimit);
+        fields.put("caseTag", caseTag);
+
+        object.put("fields",fields);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<String> request = new HttpEntity<String>(object.toString(), headers);
+        log.info("=====================");
+//        log.info(object.toString());
+//        log.info(REALTIME_API_KNIGHTHALL.concat("/").concat(caseCode).concat("?updateMask.fieldPaths=peopleJoined"));
+        ResponseEntity<String> response = restTemplate.exchange(REALTIME_API_KNIGHTHALL.concat("/").concat(updatedCase.getCaseCode()).concat("?updateMask.fieldPaths=peopleLimit&updateMask.fieldPaths=caseTag"), HttpMethod.PATCH, request, String.class);
+
+        return CompletableFuture.completedFuture(response.toString());
+    }
+
+    @Async
+    public CompletableFuture<String> deleteCase(String caseCode) {
+
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+
+        ArrayList<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
+//        interceptors.add(new HeaderRequestInterceptor("Authorization", "key=" + FIREBASE_SERVER_KEY));
+        interceptors.add(new HeaderRequestInterceptor("Content-Type", "application/json"));
+        restTemplate.setInterceptors(interceptors);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        JSONObject object = new JSONObject();
+        HttpEntity<String> request = new HttpEntity<String>(object.toString(), headers);
+        log.info("=====================");
+//        log.info(object.toString());
+//        log.info(REALTIME_API_KNIGHTHALL.concat("/").concat(caseCode).concat("?updateMask.fieldPaths=peopleJoined"));
+        ResponseEntity<String> response = restTemplate.exchange(REALTIME_API_KNIGHTHALL.concat("/").concat(caseCode), HttpMethod.DELETE, request, String.class);
+
+        return CompletableFuture.completedFuture(response.toString());
+    }
+
+    @Async
+    public CompletableFuture<String> joinCaseUpdatePeopleJoin(String caseCode, int newCount) {
+
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        RestTemplate restTemplate = new RestTemplate(requestFactory);
+
+        ArrayList<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
+//        interceptors.add(new HeaderRequestInterceptor("Authorization", "key=" + FIREBASE_SERVER_KEY));
+        interceptors.add(new HeaderRequestInterceptor("Content-Type", "application/json"));
+        restTemplate.setInterceptors(interceptors);
+
+        JSONObject object = new JSONObject();
+        JSONObject fields = new JSONObject();
+        JSONObject peopleJoined = new JSONObject();
+
+        peopleJoined.put(integerType,newCount);
+
+        fields.put("peopleJoined", peopleJoined);
+
+        object.put("fields",fields);
+
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<String>(object.toString(), headers);
+        log.info("=====================");
+        log.info(object.toString());
+//        log.info(REALTIME_API_KNIGHTHALL.concat("/").concat(caseCode).concat("?updateMask.fieldPaths=peopleJoined"));
+        ResponseEntity<String> response = restTemplate.exchange(REALTIME_API_KNIGHTHALL.concat("/").concat(caseCode).concat("?updateMask.fieldPaths=peopleJoined"), HttpMethod.PATCH, request, String.class);
+
+        return CompletableFuture.completedFuture(response.toString());
+    }
 
     @Async
     public CompletableFuture<String> createChasingCase(Case newCase) {
@@ -95,6 +186,7 @@ public class RealtimeAPIService {
 
         return CompletableFuture.completedFuture(dataResponse);
     }
+
     @Async
     public CompletableFuture<String> createCaseWithEvidence(Case newCase) {
 

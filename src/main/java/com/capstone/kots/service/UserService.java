@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -103,10 +104,14 @@ public class UserService {
 
     public Optional<List<UserJoinCase>> findUserJoinCaseByUserId(int id){
         Optional<List<UserJoinCase>> caseJoined = userJoinCaseRepository.findByUserId(id);
+        Iterator<UserJoinCase> iterator;
         if(caseJoined.isPresent()){
             caseJoined.get().forEach(userJoinCase -> {
                 Optional<Case> caseById = caseRepository.findById(userJoinCase.getCaseId());
                 if (caseById.isPresent()) {
+//                    if(caseById.get().getDeletedUserId() != null){
+//
+//                    }
                     Optional<User> user = userRepository.findById(caseById.get().getCreatedId());
                     if(user.isPresent()){
                         caseById.get().setCreatedUser(user.get());
@@ -114,6 +119,14 @@ public class UserService {
                     userJoinCase.setOneCase(caseById.get());
                 }
             });
+            iterator = caseJoined.get().iterator();
+            while (iterator.hasNext()) {
+                UserJoinCase s = iterator.next(); // must be called before you can call i.remove()
+                // Do something
+                if(s.getOneCase().getDeletedUserId() != null){
+                    iterator.remove();
+                }
+            }
         }
         return caseJoined;
     }

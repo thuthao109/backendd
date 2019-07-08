@@ -125,7 +125,37 @@ public class CaseService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Case confirmCase(Integer caseId, Integer userId, Integer limitPeople, String caseTag) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed, CaseExceptions.LimitPeopleRequired, CaseExceptions.CaseTagRequired {
+    public Optional<Case> updateCaseByCaseCode(String caseCode,
+                                     Integer limitPeople,
+                                     String caseTag) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed, CaseExceptions.LimitPeopleRequired, CaseExceptions.CaseTagRequired {
+        if (caseCode.equals("")) {
+            throw new CaseExceptions.CaseNotExisted();
+        }
+
+        Optional<Case> caseOne = caseRepository.findActiveCaseByCaseCode(caseCode);
+        if (!caseOne.isPresent()) {
+            throw new CaseExceptions.CaseNotExisted();
+        }
+
+        if(caseTag != null && !caseTag.trim().equals("")){
+            caseOne.get().setCaseTag(caseTag);
+        }
+
+        if(limitPeople != null && limitPeople != 0){
+            caseOne.get().setPeopleLimit(limitPeople);
+        }
+
+        caseRepository.save(caseOne.get());
+        caseOne.get().setCreatedUser(userRepository.findById(caseOne.get().getCreatedId()).get());
+        caseOne = getUserJoined(caseOne);
+
+        realtimeAPIService.updateCase(caseOne.get());
+
+        return caseOne;
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Case updateCase(Integer caseId, Integer userId, Integer limitPeople, String caseTag) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseAlreadyConfirmed, CaseExceptions.LimitPeopleRequired, CaseExceptions.CaseTagRequired {
         if (caseId == 0) {
             throw new CaseExceptions.CaseNotExisted();
         }
@@ -158,13 +188,9 @@ public class CaseService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Case rejectCase(Integer caseId, Integer rejectUserId, String deletedReason) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
+    public Case deleteCase(Integer caseId, Integer rejectUserId) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
         if (caseId == 0 || caseId == null) {
             throw new CaseExceptions.CaseNotExisted();
-        }
-
-        if (deletedReason == "" || deletedReason == null) {
-            throw new CaseExceptions.RejectReasonRequired();
         }
 
         Optional<Case> caseOne = caseRepository.findActiveCaseById(caseId);
@@ -173,14 +199,35 @@ public class CaseService {
         }
         Timestamp ts = new Timestamp(new Date().getTime());
         caseOne.get().setDeletedTime(ts);
-        caseOne.get().setDeletedReason(deletedReason);
+        caseOne.get().setDeletedReason("Không xảy ra");
         caseOne.get().setDeletedUserId(rejectUserId);
 
         return caseRepository.save(caseOne.get());
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Case joinCase(Integer joinedCaseId, Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull, CaseExceptions.AlreadyJoinCase {
+    public Case deleteCaseByCaseCode(String caseCode, Integer rejectUserId) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
+        if (caseCode == null || caseCode.equals("")) {
+            throw new CaseExceptions.CaseNotExisted();
+        }
+
+        Optional<Case> caseOne = caseRepository.findActiveCaseByCaseCode(caseCode);
+        if (!caseOne.isPresent()) {
+            throw new CaseExceptions.CaseNotExisted();
+        }
+        Timestamp ts = new Timestamp(new Date().getTime());
+        caseOne.get().setDeletedTime(ts);
+        caseOne.get().setDeletedReason("Không xảy ra");
+        caseOne.get().setDeletedUserId(rejectUserId);
+
+        caseRepository.save(caseOne.get());
+
+        realtimeAPIService.deleteCase(caseOne.get().getCaseCode());
+        return caseOne.get();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Case joinCase(Integer joinedCaseId, Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull, CaseExceptions.AlreadyJoinCase, ExecutionException, InterruptedException {
         if (joinedCaseId == 0 || joinedCaseId == null) {
             throw new CaseExceptions.CaseNotExisted();
         }
@@ -232,6 +279,10 @@ public class CaseService {
             caseOne = getUserJoined(caseOne);
         }
 
+        //Update join case
+        String responseString = realtimeAPIService.joinCaseUpdatePeopleJoin(caseOne.get().getCaseCode(),users.size()).get();
+        log.info("==============");
+        log.info(responseString);
 
         return caseOne.get();
     }
