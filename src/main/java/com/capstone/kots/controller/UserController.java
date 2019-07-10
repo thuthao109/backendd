@@ -1,5 +1,7 @@
 package com.capstone.kots.controller;
 
+import com.capstone.kots.entity.CaseNotification;
+import com.capstone.kots.entity.NotificationResponse;
 import com.capstone.kots.entity.User;
 import com.capstone.kots.entity.UserJoinCase;
 import com.capstone.kots.exception.RoleExceptions;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,6 +70,16 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(listCases);
+    }
+
+    @RequestMapping(value = "/users/{id}/notifications", method = RequestMethod.GET)
+    public ResponseEntity getNotificationByUserById(@PathVariable("id") int id){
+        NotificationResponse resp = userService.findNotificationByUserId(id);
+        if (resp == null){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(resp);
     }
 
 

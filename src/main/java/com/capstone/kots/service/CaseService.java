@@ -17,6 +17,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import redis.embedded.Redis;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -40,6 +41,7 @@ public class CaseService {
     private final RealtimeAPIService realtimeAPIService;
     private final String REALTIME_API = "http://localhost:3001";
     private UserJoinCaseRepository userJoinCaseRepository;
+    private RedisMessagePublisher publisher;
 
 
     @Autowired
@@ -48,13 +50,15 @@ public class CaseService {
                        FirebasePushNotificationService pushNotificationService,
                        RealtimeAPIService realtimeAPIService,
                        UserRepository userRepository,
-                       UserJoinCaseRepository userJoinCaseRepository) {
+                       UserJoinCaseRepository userJoinCaseRepository,
+                       RedisMessagePublisher publisher) {
         this.caseRepository = caseRepository;
         this.amazonClient = amazonClient;
         this.pushNotificationService = pushNotificationService;
         this.realtimeAPIService = realtimeAPIService;
         this.userRepository = userRepository;
         this.userJoinCaseRepository = userJoinCaseRepository;
+        this.publisher = publisher;
         this.mapper = new ObjectMapper();
     }
 
@@ -323,6 +327,8 @@ public class CaseService {
         log.info("==============");
         log.info(responseString);
 
+        publisher.publish(newCase);
+
         return newCase;
     }
 
@@ -355,6 +361,8 @@ public class CaseService {
         newCase.setCreatedTime(ts);
 
         caseRepository.saveAndFlush(newCase);
+
+        publisher.publish(newCase);
 
         String responseString = realtimeAPIService.createCase(newCase).get();
         log.info(responseString);
@@ -410,6 +418,7 @@ public class CaseService {
         String responseString = realtimeAPIService.createCaseWithEvidence(newCase).get();
         log.info(responseString);
 
+        publisher.publish(newCase);
 
 
         return newCase;

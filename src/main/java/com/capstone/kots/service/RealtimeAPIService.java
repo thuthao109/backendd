@@ -24,7 +24,7 @@ public class RealtimeAPIService {
     private final String integerType = "integerValue";
     private final String stringType = "stringValue";
     private final String doubleType = "doubleValue";
-    private static String FIREBASE_SERVER_KEY = "AAAA7XjQPXQ:APA91bF5mbhgPwOvQjXJL204wGYGAAKPqOkWr4oXjYdfeqf7WQ0P3cBKaynYnRXVYpjQpr5CUUktBGMtISHCdEi-wqjkozL23WexH_PNepuScFw6g_bmVLgfEuE9L-CNZ12Js-X9LMNK";
+
 
 
     @Async

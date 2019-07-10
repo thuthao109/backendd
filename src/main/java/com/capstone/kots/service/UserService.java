@@ -4,10 +4,7 @@ import com.capstone.kots.entity.*;
 import com.capstone.kots.exception.CaseExceptions;
 import com.capstone.kots.exception.RoleExceptions;
 import com.capstone.kots.exception.UserExceptions;
-import com.capstone.kots.repository.CaseRepository;
-import com.capstone.kots.repository.RoleRepository;
-import com.capstone.kots.repository.UserJoinCaseRepository;
-import com.capstone.kots.repository.UserRepository;
+import com.capstone.kots.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +30,7 @@ public class UserService {
     private final RoleRepository roleRepository;
     private final UserJoinCaseRepository userJoinCaseRepository;
     private final CaseRepository caseRepository;
+    private final CaseNotificationRepository caseNotificationRepository;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     public final AmazonClient amazonClient;
@@ -42,13 +41,15 @@ public class UserService {
                        RoleRepository roleRepository,
                        AmazonClient amazonClient,
                        UserJoinCaseRepository userJoinCaseRepository,
-                       CaseRepository caseRepository) {
+                       CaseRepository caseRepository,
+                       CaseNotificationRepository caseNotificationRepository) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.roleRepository = roleRepository;
         this.amazonClient = amazonClient;
         this.userJoinCaseRepository = userJoinCaseRepository;
         this.caseRepository = caseRepository;
+        this.caseNotificationRepository = caseNotificationRepository;
     }
 
     //update user
@@ -101,6 +102,27 @@ public class UserService {
         return user;
     }
 
+    public NotificationResponse findNotificationByUserId(int id){
+        NotificationResponse response = new NotificationResponse();
+        Optional<List<CaseNotification>> caseNotif = caseNotificationRepository.findByUserId(id);
+        if(caseNotif.isPresent()){
+            int count = 0;
+            for(CaseNotification c : caseNotif.get()){
+                if(c.getRead() == false){
+                    count++;
+                }
+                Optional<Case> caseById = caseRepository.findById(c.getNotificationCaseSourceId());
+                c.setCaseOne(caseById.get());
+            }
+            response.setBadge(count);
+            response.setListNotif(caseNotif.get());
+        }else{
+            response.setBadge(0);
+            response.setListNotif(new ArrayList<>());
+        }
+
+        return response;
+    }
 
     public Optional<List<UserJoinCase>> findUserJoinCaseByUserId(int id){
         Optional<List<UserJoinCase>> caseJoined = userJoinCaseRepository.findByUserId(id);
