@@ -29,6 +29,14 @@ public class Case implements Serializable {
     private String caseSource;
     private int peopleLimit;
     private Integer deletedUserId;
+    private String caseDescription;
+    //---
+    // 1 occuring
+    // 2 done
+    // 3 cancel
+    // 4 pending
+    private Integer caseStatus;
+    //---
 
     private User createdUser;
 
@@ -227,5 +235,25 @@ public class Case implements Serializable {
 
     public void setCaseName(String caseName) {
         this.caseName = caseName;
+    }
+
+    @Basic
+    @Column(name = "case_description")
+    public String getCaseDescription() {
+        return caseDescription;
+    }
+
+    public void setCaseDescription(String caseDescription) {
+        this.caseDescription = caseDescription;
+    }
+
+    @Basic
+    @Column(name = "case_status")
+    public Integer getCaseStatus() {
+        return caseStatus;
+    }
+
+    public void setCaseStatus(Integer caseStatus) {
+        this.caseStatus = caseStatus;
     }
 }

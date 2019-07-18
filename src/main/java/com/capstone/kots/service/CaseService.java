@@ -1,10 +1,12 @@
 package com.capstone.kots.service;
 
 import com.capstone.kots.entity.Case;
+import com.capstone.kots.entity.CaseDetailInfo;
 import com.capstone.kots.entity.User;
 import com.capstone.kots.entity.UserJoinCase;
 import com.capstone.kots.exception.CaseExceptions;
 import com.capstone.kots.exception.UserExceptions;
+import com.capstone.kots.repository.CaseDetailInfoRepository;
 import com.capstone.kots.repository.CaseRepository;
 import com.capstone.kots.repository.UserJoinCaseRepository;
 import com.capstone.kots.repository.UserRepository;
@@ -30,11 +32,13 @@ import java.util.concurrent.ExecutionException;
 public class CaseService {
     public final CaseRepository caseRepository;
     public final UserRepository userRepository;
+    public final CaseDetailInfoRepository caseDetailInfoRepository;
     public final AmazonClient amazonClient;
     public ObjectMapper mapper;
     public final FirebasePushNotificationService pushNotificationService;
     private final String CHASING_TAG_TYPE = "Rượt bắt cuớp";
     private final String EMERGENCY_CASE_NAME = "Tín hiệu khẩn cấp";
+    private final String SIGNAL_RECEIVE = "Tín hiệu hỗ trợ";
     private final String SUPPORT_CASE_NAME = "Hỗ trợ bắt cướp";
     private final String HAPPEN_CASE_NAME = "Vụ việc xảy ra";
     private final String UNDEFINED_CASE = "Chưa xác định";
@@ -42,6 +46,17 @@ public class CaseService {
     private final String REALTIME_API = "http://localhost:3001";
     private UserJoinCaseRepository userJoinCaseRepository;
     private RedisMessagePublisher publisher;
+
+    private final String ROBBER_NAME = "Cướp giật";
+    private final String BIENTHAI_NAME = "Biến thái";
+    private final String BATCOC_NAME = "Bắt cóc";
+    private final String HOAHOAN_NAME = "Hoả hoạn";
+    private final String BAOLUC_NAME = "Bạo lực";
+    private final String TAINAN_NAME = "Tai nạn";
+    private final String CAPCUU_NAME = "Cấp cứu";
+    private final String KHAC_NAME = "Khác";
+
+
 
 
     @Autowired
@@ -51,6 +66,7 @@ public class CaseService {
                        RealtimeAPIService realtimeAPIService,
                        UserRepository userRepository,
                        UserJoinCaseRepository userJoinCaseRepository,
+                       CaseDetailInfoRepository caseDetailInfoRepository,
                        RedisMessagePublisher publisher) {
         this.caseRepository = caseRepository;
         this.amazonClient = amazonClient;
@@ -58,6 +74,7 @@ public class CaseService {
         this.realtimeAPIService = realtimeAPIService;
         this.userRepository = userRepository;
         this.userJoinCaseRepository = userJoinCaseRepository;
+        this.caseDetailInfoRepository = caseDetailInfoRepository;
         this.publisher = publisher;
         this.mapper = new ObjectMapper();
     }
@@ -231,6 +248,27 @@ public class CaseService {
     }
 
     @Transactional(rollbackFor = Exception.class)
+    public Case cancelCaseByCaseId(Integer caseId, Integer cancelUserId) throws CaseExceptions.CaseNotExisted, CaseExceptions.RejectReasonRequired {
+        if (caseId == 0 || caseId == null) {
+            throw new CaseExceptions.CaseNotExisted();
+        }
+
+        Optional<Case> caseOne = caseRepository.findActiveCaseById(caseId);
+        if (!caseOne.isPresent()) {
+            throw new CaseExceptions.CaseNotExisted();
+        }
+        Timestamp ts = new Timestamp(new Date().getTime());
+        caseOne.get().setCaseStatus(3);
+
+
+        caseRepository.save(caseOne.get());
+
+//        realtimeAPIService.deleteCase(caseOne.get().getCaseCode());
+        return caseOne.get();
+    }
+
+
+    @Transactional(rollbackFor = Exception.class)
     public Case joinCase(Integer joinedCaseId, Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull, CaseExceptions.AlreadyJoinCase, ExecutionException, InterruptedException {
         if (joinedCaseId == 0 || joinedCaseId == null) {
             throw new CaseExceptions.CaseNotExisted();
@@ -283,10 +321,27 @@ public class CaseService {
             caseOne = getUserJoined(caseOne);
         }
 
+
+
         //Update join case
         String responseString = realtimeAPIService.joinCaseUpdatePeopleJoin(caseOne.get().getCaseCode(),users.size()).get();
         log.info("==============");
         log.info(responseString);
+
+        Optional<User> userJoining = userRepository.findById(userId);
+        Date now = new Date();
+        Timestamp ts = new Timestamp(now.getTime());
+
+        CaseDetailInfo detailInfo = new CaseDetailInfo();
+        detailInfo.setCaseId(caseOne.get().getId());
+        detailInfo.setDescription(String.format(Locale.US,"Hiệp sĩ %s đã tham gia xử lý",userJoining.get().getFullname()));
+
+        detailInfo.setCreatedTime(ts);
+
+        caseDetailInfoRepository.save(detailInfo);
+
+        String responseSubCollect = realtimeAPIService.createSubCollectionInCase(caseOne.get().getCaseCode(),detailInfo).get();
+        log.info(responseSubCollect);
 
         return caseOne.get();
     }
@@ -374,15 +429,19 @@ public class CaseService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public Case createCaseWithEvidence(Case newCase, MultipartFile file) throws IOException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException, CaseExceptions.NoCreatedUserDefineException {
+    public Case createCaseWithEvidence(Case newCase, MultipartFile file) throws IOException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException, CaseExceptions.NoCreatedUserDefineException, CaseExceptions.CaseTagTypeException {
 
         if (newCase.getLatitude() == 0 || newCase.getLongitude() == 0) {
             throw new CaseExceptions.CoordinateNotExistedException();
         }
 
-        if (file == null) {
-            throw new CaseExceptions.EvidenceNotExistedException();
+        if(newCase.getCaseTagType() == 0){
+            throw new CaseExceptions.CaseTagTypeException();
         }
+
+//        if (file == null) {
+//            throw new CaseExceptions.EvidenceNotExistedException();
+//        }
 
         if (newCase.getCreatedId() == null || newCase.getCreatedId() == 0){
             throw new CaseExceptions.NoCreatedUserDefineException();
@@ -395,28 +454,69 @@ public class CaseService {
             throw new CaseExceptions.NoCreatedUserDefineException();
         }
 
-        if (file.getOriginalFilename().contains(".mp4")) {
-            newCase.setDisplayType(1);
-        } else {
-            newCase.setDisplayType(2);
+        if(file != null){
+            if (file.getOriginalFilename().contains(".mp4")) {
+                newCase.setDisplayType(1);
+            } else {
+                newCase.setDisplayType(2);
+            }
+            String url = amazonClient.uploadFile(file);
+            newCase.setCaseSource(url);
         }
-        String url = amazonClient.uploadFile(file);
-        newCase.setCaseSource(url);
-        newCase.setCaseTagType(2);
+
+        if(newCase.getCaseTagType() == 4){
+            newCase.setCaseTagType(4);
+            newCase.setCaseName(ROBBER_NAME);
+        }else if(newCase.getCaseTagType() == 5){
+            newCase.setCaseTagType(5);
+            newCase.setCaseName(BIENTHAI_NAME);
+        }else if(newCase.getCaseTagType() == 6){
+            newCase.setCaseTagType(6);
+            newCase.setCaseName(BATCOC_NAME);
+        }else if(newCase.getCaseTagType() == 7){
+            newCase.setCaseTagType(7);
+            newCase.setCaseName(HOAHOAN_NAME);
+        }else if(newCase.getCaseTagType() == 8){
+            newCase.setCaseTagType(8);
+            newCase.setCaseName(BAOLUC_NAME);
+        }else if(newCase.getCaseTagType() == 9){
+            newCase.setCaseTagType(9);
+            newCase.setCaseName(TAINAN_NAME);
+        }else if(newCase.getCaseTagType() == 10){
+            newCase.setCaseTagType(10);
+            newCase.setCaseName(CAPCUU_NAME);
+        }else if(newCase.getCaseTagType() == 11){
+            newCase.setCaseTagType(11);
+            newCase.setCaseName(KHAC_NAME);
+        }
+        newCase.setCaseTag(SIGNAL_RECEIVE);
+
+
+        newCase.setCaseStatus(1);
         newCase.setCaseCode(ServiceUtil.getAlphaNumericString(12));
         newCase.setCreatedUser(isExistedUser.get());
-        newCase.setCaseName(HAPPEN_CASE_NAME);
         newCase.setPeopleLimit(3);
-        newCase.setCaseTag(UNDEFINED_CASE);
 
         Date now = new Date();
         Timestamp ts = new Timestamp(now.getTime());
         newCase.setCreatedTime(ts);
 
-        caseRepository.saveAndFlush(newCase);
+        newCase = caseRepository.saveAndFlush(newCase);
 
         String responseString = realtimeAPIService.createCaseWithEvidence(newCase).get();
         log.info(responseString);
+
+        CaseDetailInfo detailInfo = new CaseDetailInfo();
+        detailInfo.setCaseId(newCase.getId());
+        detailInfo.setDescription("Tín hiệu đã tạo");
+
+        detailInfo.setCreatedTime(ts);
+
+        caseDetailInfoRepository.save(detailInfo);
+
+        String responseSubCollect = realtimeAPIService.createSubCollectionInCase(newCase.getCaseCode(),detailInfo).get();
+        log.info(responseSubCollect);
+
 
         publisher.publish(newCase);
 

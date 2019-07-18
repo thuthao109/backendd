@@ -1,6 +1,7 @@
 package com.capstone.kots.service;
 
 import com.capstone.kots.entity.Case;
+import com.capstone.kots.entity.CaseDetailInfo;
 import com.capstone.kots.service.interceptor.HeaderRequestInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -188,6 +189,39 @@ public class RealtimeAPIService {
     }
 
     @Async
+    public CompletableFuture<String> createSubCollectionInCase(String caseCode, CaseDetailInfo detailInfo){
+        RestTemplate restTemplate = new RestTemplate();
+
+        ArrayList<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
+//        interceptors.add(new HeaderRequestInterceptor("Authorization", "key=" + FIREBASE_SERVER_KEY));
+        interceptors.add(new HeaderRequestInterceptor("Content-Type", "application/json"));
+        restTemplate.setInterceptors(interceptors);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        JSONObject object = new JSONObject();
+        JSONObject fields = new JSONObject();
+        JSONObject description = new JSONObject();
+        JSONObject createdTime = new JSONObject();
+
+        description.put(stringType,detailInfo.getDescription());
+        createdTime.put(stringType,detailInfo.getCreatedTime());
+
+        fields.put("description",description);
+        fields.put("createdTime",createdTime);
+
+
+        object.put("fields",fields);
+
+
+        HttpEntity<String> requestSubCollection = new HttpEntity<String>(object.toString(), headers);
+        String subCollection = restTemplate.postForObject(REALTIME_API_KNIGHTHALL.concat("/").concat(caseCode).concat("/case_info"),requestSubCollection,String.class);
+        log.info("sub collect");
+        log.info(subCollection.toString());
+        return CompletableFuture.completedFuture(subCollection);
+    }
+
+    @Async
     public CompletableFuture<String> createCaseWithEvidence(Case newCase) {
 
         RestTemplate restTemplate = new RestTemplate();
@@ -214,9 +248,12 @@ public class RealtimeAPIService {
         JSONObject userPhone = new JSONObject();
         JSONObject caseName = new JSONObject();
         JSONObject userId = new JSONObject();
+        JSONObject caseStatus = new JSONObject();
+        JSONObject caseDescription = new JSONObject();
 
         itemType.put(integerType,2);
 
+        caseStatus.put(integerType,newCase.getCaseStatus());
         caseCode.put(stringType,newCase.getCaseCode());
         latitude.put(doubleType, newCase.getLatitude());
         longitude.put(doubleType, newCase.getLongitude());
@@ -225,8 +262,12 @@ public class RealtimeAPIService {
         peopleLimit.put(integerType,newCase.getPeopleLimit());
         caseTag.put(stringType,newCase.getCaseTag());
         createdTime.put(stringType,newCase.getCreatedTime());
+        caseDescription.put(stringType,newCase.getCaseDescription());
         peopleJoined.put(integerType,0);
-        caseSource.put(stringType,newCase.getCaseSource());
+        if(newCase.getCaseSource() != null && newCase.getCaseSource().equals("")){
+            caseSource.put(stringType,newCase.getCaseSource());
+        }
+
 
         userNameCreated.put(stringType,newCase.getCreatedUser().getFullname());
         userPhone.put(stringType,newCase.getCreatedUser().getPhoneNumber());
@@ -244,7 +285,12 @@ public class RealtimeAPIService {
         fields.put("name", userNameCreated);
         fields.put("phone",userPhone);
         fields.put("caseName",caseName);
-        fields.put("caseSource",caseSource);
+        fields.put("caseStatus",caseStatus);
+        fields.put("caseDescription",caseDescription);
+        if(newCase.getCaseSource() != null && newCase.getCaseSource().equals("")){
+            fields.put("caseSource",caseSource);
+        }
+
         fields.put("userId",userId);
 
 
@@ -259,6 +305,8 @@ public class RealtimeAPIService {
         log.info(object.toString());
 
         String dataResponse = restTemplate.postForObject(REALTIME_API_KNIGHTHALL.concat("/?documentId=").concat(newCase.getCaseCode()), request, String.class);
+
+        //create sub collection for information
 
         return CompletableFuture.completedFuture(dataResponse);
     }

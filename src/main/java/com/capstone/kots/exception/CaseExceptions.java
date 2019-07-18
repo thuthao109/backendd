@@ -97,6 +97,16 @@ public class CaseExceptions {
         }
     }
 
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Dữ liệu tín hiệu không hợp lệ")
+    public static class CaseTagTypeException extends Exception{
+        public CaseTagTypeException(){
+            super();
+        }
+        public CaseTagTypeException(String message){
+            super(message);
+        }
+    }
+
     @ResponseStatus(code = HttpStatus.BAD_REQUEST, reason = "Không có dữ liệu người tạo")
     public static class NoCreatedUserDefineException extends Exception{
         public NoCreatedUserDefineException(){

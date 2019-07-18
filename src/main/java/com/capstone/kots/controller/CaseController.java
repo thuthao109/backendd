@@ -77,6 +77,13 @@ public class CaseController {
         return ResponseEntity.status(HttpStatus.OK).body(joinCase);
     }
 
+    @RequestMapping(value = "/case/{caseId}/cancel", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    public ResponseEntity cancelCase(@PathVariable("caseId") Integer caseId,
+                                   @RequestParam("userId") Integer userId) throws CaseExceptions.CaseNotExisted, CaseExceptions.CaseIsFull, CaseExceptions.AlreadyJoinCase, ExecutionException, InterruptedException {
+        Case joinCase = caseService.joinCase(caseId,userId);
+        return ResponseEntity.status(HttpStatus.OK).body(joinCase);
+    }
+
     @RequestMapping(value = "/case/{caseId}/update", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity updateCase(@PathVariable("caseId") Integer caseId,
                                       @RequestParam("userId") Integer userId,
@@ -110,7 +117,7 @@ public class CaseController {
     }
 
     @RequestMapping(value = "/cases", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity creatNewCase(@RequestParam("file") MultipartFile file, Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException, CaseExceptions.NoCreatedUserDefineException {
+    public ResponseEntity creatNewCase(@RequestParam(value = "file",required = false) MultipartFile file, Case newCase) throws IOException, UserExceptions.UserNotFoundException, CaseExceptions.EvidenceNotExistedException, CaseExceptions.CoordinateNotExistedException, ExecutionException, InterruptedException, CaseExceptions.NoCreatedUserDefineException, CaseExceptions.CaseTagTypeException {
         log.info("Call case Service for creating new case");
         Case createdCase = caseService.createCaseWithEvidence(newCase, file);
         return ResponseEntity.status(HttpStatus.OK).body(createdCase);
